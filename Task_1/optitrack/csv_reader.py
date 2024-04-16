@@ -126,7 +126,7 @@ class Take(object):
         self._ignored_labels  = set()
         self._column_map = list()
 
-        csv_stream = csv.reader(open(path, "rU"))
+        csv_stream = csv.reader(open(path, "r"))
         self._read_header(csv_stream, verbose)
         self._read_data(csv_stream, verbose)        
         
