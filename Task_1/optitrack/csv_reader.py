@@ -198,8 +198,6 @@ class Take(object):
         """Load a CSV motion capture data file."""
 
         self.rigid_bodies = dict()
-        self.rigid_body_markers = dict()
-        self.markers = dict()
         
         self._raw_info = dict()
         self._ignored_labels  = set()
@@ -303,12 +301,14 @@ class Take(object):
             
             # Extract Rigid Body Marker informations
             elif asset_type == 'Rigid Body Marker':
-                if label in self.rigid_bodies:
-                    body = self.rigid_bodies[label]
+                
+                root = label.split(":")[0]
+
+                if root in self.rigid_bodies[root].rigid_body_markers:
+                    body = self.rigid_bodies[root].rigid_body_markers[label]
                 else:
                     body = RigidBodyMarker(label,ID)
-                    root = label.split(":")[0]
-                    self.rigid_bodies[root].rigid_body_markers = body
+                    self.rigid_bodies[root].rigid_body_markers[label] = body
                     
                 if field == 'Position':
                     axis_index = {'X':0, 'Y':1, 'Z':2}[axis]
@@ -322,12 +322,13 @@ class Take(object):
             
             # Extract marker informations
             elif asset_type == 'Marker':
-                if label in self.rigid_bodies:
-                    body = self.rigid_bodies[label]
+                root = label.split(":")[0]
+                
+                if root in self.rigid_bodies[root].markers:
+                    body = self.rigid_bodies[root].markers[label]
                 else:
                     body = Marker(label,ID)
-                    root = label.split(":")[0]
-                    self.rigid_bodies[root].rigid_body_markers = body
+                    self.rigid_bodies[root].markers[label] = body
                     
                 if field == 'Position':
                     axis_index = {'X':0, 'Y':1, 'Z':2}[axis]
