@@ -74,9 +74,10 @@ class RigidBody(object):
         
     def _set_position( self, frame, axis, value ):
         if value != '':
-            if self.positions[frame] is None:
+            if self.positions[frame] is None:  
                 self.positions[frame] = [0.0,0.0,0.0]                
-            self.positions[frame][axis] = float(value)
+            self.positions[frame][axis] = float(value)  
+
 
     def _set_rotation( self, frame, axis, value ):
         if value != '':
@@ -303,38 +304,38 @@ class Take(object):
             elif asset_type == 'Rigid Body Marker':
                 
                 root = label.split(":")[0]
-
-                if root in self.rigid_bodies[root].rigid_body_markers:
-                    body = self.rigid_bodies[root].rigid_body_markers[label]
-                else:
-                    body = RigidBodyMarker(label,ID)
-                    self.rigid_bodies[root].rigid_body_markers[label] = body
+                if root in self.rigid_bodies:
+                    if label in self.rigid_bodies[root].rigid_body_markers:
+                        body = self.rigid_bodies[root].rigid_body_markers[label]
+                    else:
+                        body = RigidBodyMarker(label,ID)
+                        self.rigid_bodies[root].rigid_body_markers[label] = body
+                        
+                    if field == 'Position':
+                        axis_index = {'X':0, 'Y':1, 'Z':2}[axis]
+                        setter = body._set_position
+                        self._column_map.append(ColumnMapping(setter, axis_index, col))
                     
-                if field == 'Position':
-                    axis_index = {'X':0, 'Y':1, 'Z':2}[axis]
-                    setter = body._set_position
-                    self._column_map.append(ColumnMapping(setter, axis_index, col))
-                
-                if field == 'Marker Quality':
-                    axis_index = {'' : 0}[axis]
-                    setter = body._set_position
-                    self._column_map.append(ColumnMapping(setter, axis_index, col))
+                    if field == 'Marker Quality':
+                        axis_index = {'' : 0}[axis]
+                        setter = body._set_position
+                        self._column_map.append(ColumnMapping(setter, axis_index, col))
             
             # Extract marker informations
             elif asset_type == 'Marker':
                 root = label.split(":")[0]
-                
-                if root in self.rigid_bodies[root].markers:
-                    body = self.rigid_bodies[root].markers[label]
-                else:
-                    body = Marker(label,ID)
-                    self.rigid_bodies[root].markers[label] = body
-                    
-                if field == 'Position':
-                    axis_index = {'X':0, 'Y':1, 'Z':2}[axis]
-                    setter = body._set_position
-                    self._column_map.append(ColumnMapping(setter, axis_index, col))
-                                
+                if root in self.rigid_bodies:
+                    if label in self.rigid_bodies[root].markers:
+                        body = self.rigid_bodies[root].markers[label]
+                    else:
+                        body = Marker(label,ID)
+                        self.rigid_bodies[root].markers[label] = body
+                        
+                    if field == 'Position':
+                        axis_index = {'X':0, 'Y':1, 'Z':2}[axis]
+                        setter = body._set_position
+                        self._column_map.append(ColumnMapping(setter, axis_index, col))
+                                    
             else:
                 if label not in self._ignored_labels:
                     if verbose: print("Ignoring object %s of type %s." % (label, asset_type))
@@ -360,7 +361,11 @@ class Take(object):
 
             # add the new frame time to each object storing a trajectory
             for body in self.rigid_bodies.values():
-                body._add_frame(frame_t)                           
+                body._add_frame(frame_t)
+                for elem in body.rigid_body_markers.values():
+                    elem._add_frame(frame_t)  
+                for elem in body.markers.values():
+                    elem._add_frame(frame_t)                         
             
             # process the columns of interest
             for mapping in self._column_map:
