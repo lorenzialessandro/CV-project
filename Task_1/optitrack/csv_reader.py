@@ -61,6 +61,10 @@ class RigidBody(object):
         self.positions = list()  # list with one element per frame, either None or [x,y,z] float lists
         self.rotations = list()  # list with one element per frame, either None or [x,y,z,w] float lists
         self.times     = list()  # list with one element per frame with the capture time   
+        
+        self.rigid_body_markers = dict()
+        self.markers = dict()
+                
         return
 
     def _add_frame(self, t):
@@ -71,10 +75,8 @@ class RigidBody(object):
     def _set_position( self, frame, axis, value ):
         if value != '':
             if self.positions[frame] is None:
-                self.positions[frame] = [0.0,0.0,0.0]
-                
+                self.positions[frame] = [0.0,0.0,0.0]                
             self.positions[frame][axis] = float(value)
-            # print(self.positions)
 
     def _set_rotation( self, frame, axis, value ):
         if value != '':
@@ -92,6 +94,80 @@ class RigidBody(object):
                 count = count + 1
         return count
     
+################################################################
+
+class RigidBodyMarker(object):
+    """Representation of a single rigid body."""
+
+    def __init__(self, label, ID):
+        self.label     = label
+        self.ID        = ID
+        self.positions = list()  # list with one element per frame, either None or [x,y,z] float lists
+        self.times     = list()  # list with one element per frame with the capture time   
+        self.quality = 0.0
+
+        return
+
+    def _add_frame(self, t):
+        self.times.append(t)
+        self.positions.append(None)
+        
+    def _set_position( self, frame, axis, value ):
+        if value != '':
+            if self.positions[frame] is None:
+                self.positions[frame] = [0.0,0.0,0.0] 
+            self.positions[frame][axis] = float(value)
+
+    def _set_quality( self, frame, value):
+        if value != '':
+            if self.quality[frame] is None:
+                self.quality[frame] = 0.0
+            self.quality[frame] = float(value)
+
+    def num_total_frames(self):
+        return len(self.times)
+
+    def num_valid_frames(self):
+        count = 0
+        for pt in self.positions:
+            if pt is not None:
+                count = count + 1
+        return count
+
+################################################################
+
+class Marker(object):
+    """Representation of a single rigid body."""
+
+    def __init__(self, label, ID):
+        self.label     = label
+        self.ID        = ID
+        self.positions = list()  # list with one element per frame, either None or [x,y,z] float lists
+        self.times     = list()  # list with one element per frame with the capture time   
+
+        return
+
+    def _add_frame(self, t):
+        self.times.append(t)
+        self.positions.append(None)
+        
+    def _set_position( self, frame, axis, value ):
+        if value != '':
+            if self.positions[frame] is None:
+                self.positions[frame] = [0.0,0.0,0.0]           
+            self.positions[frame][axis] = float(value)
+
+    def num_total_frames(self):
+        return len(self.times)
+
+    def num_valid_frames(self):
+        count = 0
+        for pt in self.positions:
+            if pt is not None:
+                count = count + 1
+        return count
+
+
 ################################################################
 class Take(object):
     """Representation of a motion capture Take.  Each CSV file represents one Take.
@@ -122,6 +198,9 @@ class Take(object):
         """Load a CSV motion capture data file."""
 
         self.rigid_bodies = dict()
+        self.rigid_body_markers = dict()
+        self.markers = dict()
+        
         self._raw_info = dict()
         self._ignored_labels  = set()
         self._column_map = list()
@@ -185,7 +264,7 @@ class Take(object):
         for col,asset_type,label,ID,field,axis in zip( range(len(self._raw_types)), self._raw_types, self._raw_labels, \
                                                              line5[2:], self._raw_fields, self._raw_axes ):
 
-            if asset_type == 'Rigid Body':
+            if asset_type == 'Rigid Body' :
                 if label in self.rigid_bodies:
                     body = self.rigid_bodies[label]
                 else:
@@ -202,6 +281,8 @@ class Take(object):
                     axis_index = {'X':0, 'Y':1, 'Z':2}[axis]
                     setter = body._set_position
                     self._column_map.append(ColumnMapping(setter, axis_index, col))
+            
+            # Extract bone informations
             elif asset_type == 'Bone':
                 if label in self.rigid_bodies:
                     body = self.rigid_bodies[label]
@@ -210,16 +291,49 @@ class Take(object):
                     self.rigid_bodies[label] = body
 
                 # create a column map entry for each rigid body axis
-                # if field == 'Rotation':
-                #     axis_index = {'X':0, 'Y':1, 'Z':2, 'W': 3}[axis]
-                #     setter = body._set_rotation
-                #     self._column_map.append(ColumnMapping(setter, axis_index, col))
+                if field == 'Rotation':
+                    axis_index = {'X':0, 'Y':1, 'Z':2, 'W': 3}[axis]
+                    setter = body._set_rotation
+                    self._column_map.append(ColumnMapping(setter, axis_index, col))
 
                 if field == 'Position':
                     axis_index = {'X':0, 'Y':1, 'Z':2}[axis]
                     setter = body._set_position
                     self._column_map.append(ColumnMapping(setter, axis_index, col))
+            
+            # Extract Rigid Body Marker informations
+            elif asset_type == 'Rigid Body Marker':
+                if label in self.rigid_bodies:
+                    body = self.rigid_bodies[label]
+                else:
+                    body = RigidBodyMarker(label,ID)
+                    root = label.split(":")[0]
+                    self.rigid_bodies[root].rigid_body_markers = body
+                    
+                if field == 'Position':
+                    axis_index = {'X':0, 'Y':1, 'Z':2}[axis]
+                    setter = body._set_position
+                    self._column_map.append(ColumnMapping(setter, axis_index, col))
                 
+                if field == 'Marker Quality':
+                    axis_index = {'' : 0}[axis]
+                    setter = body._set_position
+                    self._column_map.append(ColumnMapping(setter, axis_index, col))
+            
+            # Extract marker informations
+            elif asset_type == 'Marker':
+                if label in self.rigid_bodies:
+                    body = self.rigid_bodies[label]
+                else:
+                    body = Marker(label,ID)
+                    root = label.split(":")[0]
+                    self.rigid_bodies[root].rigid_body_markers = body
+                    
+                if field == 'Position':
+                    axis_index = {'X':0, 'Y':1, 'Z':2}[axis]
+                    setter = body._set_position
+                    self._column_map.append(ColumnMapping(setter, axis_index, col))
+                                
             else:
                 if label not in self._ignored_labels:
                     if verbose: print("Ignoring object %s of type %s." % (label, asset_type))
@@ -245,8 +359,8 @@ class Take(object):
 
             # add the new frame time to each object storing a trajectory
             for body in self.rigid_bodies.values():
-                body._add_frame(frame_t)
-
+                body._add_frame(frame_t)                           
+            
             # process the columns of interest
             for mapping in self._column_map:
                 # each mapping is a namedtuple with a setter method, column index, and axis name
