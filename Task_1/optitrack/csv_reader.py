@@ -237,7 +237,6 @@ class Bone(object):
                 self.positions[frame] = [0.0,0.0,0.0]                
             self.positions[frame][axis] = float(value)  
 
-
     def _set_rotation( self, frame, axis, value ):
         if value != '':
             if self.rotations[frame] is None:
@@ -410,11 +409,11 @@ class Take(object):
                     body = Skeleton(root,ID)
                     self.skeletons[root] = body
                     
-                if label in self.skeletons:
-                    body = self.skeletons[label]
+                if label in self.skeletons[root].bones:
+                    body = self.skeletons[root].bones[label]
                 else:
                     body = Bone(label,ID)
-                    self.skeletons[label] = body
+                    self.skeletons[root].bones[label] = body
 
                 # create a column map entry for each rigid body axis
                 if field == 'Rotation':
@@ -428,17 +427,17 @@ class Take(object):
                     self._column_map.append(ColumnMapping(setter, axis_index, col))
                         # Extract bone informations
                         
-            elif asset_type == 'BoneMarker':
+            elif asset_type == 'Bone Marker':
                 root = label.split(":")[0]
                 if root not in self.skeletons:
                     body = Skeleton(root,ID)
                     self.skeletons[root] = body
                     
-                if label in self.skeletons:
-                    body = self.skeletons[label]
+                if label in self.skeletons[root].bone_markers:
+                    body = self.skeletons[root].bone_markers[label]
                 else:
                     body = BoneMarker(label,ID)
-                    self.skeletons[label] = body
+                    self.skeletons[root].bone_markers[label] = body
 
                 if field == 'Position':
                     axis_index = {'X':0, 'Y':1, 'Z':2}[axis]
@@ -525,5 +524,7 @@ class Take(object):
             for mapping in self._column_map:
                 # each mapping is a namedtuple with a setter method, column index, and axis name
                 mapping.setter( row_num, mapping.axis, values[mapping.column] )
+
+
 
     # ================================================================
