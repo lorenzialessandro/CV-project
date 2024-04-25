@@ -52,239 +52,82 @@ import collections
 ColumnMapping = collections.namedtuple('ColumnMapping', ['setter', 'axis', 'column'])
 
 ################################################################
-class RigidBody(object):
-    """Representation of a single rigid body."""
+class FrameObject(object):
+    """Representation of an object with frame-based data."""
 
     def __init__(self, label, ID):
-        self.label     = label
-        self.ID        = ID
-        self.positions = list()  # list with one element per frame, either None or [x,y,z] float lists
-        self.rotations = list()  # list with one element per frame, either None or [x,y,z,w] float lists
-        self.times     = list()  # list with one element per frame with the capture time   
-        
-        self.rigid_body_markers = dict()
-        self.markers = dict()
-                 
-        return
+        self.label = label
+        self.ID = ID
+        self.positions = []  # list with one element per frame, either None or [x,y,z] float lists
+        self.rotations = []  # list with one element per frame, either None or [x,y,z,w] float lists
+        self.times = []  # list with one element per frame with the capture time
 
     def _add_frame(self, t):
         self.times.append(t)
         self.positions.append(None)
         self.rotations.append(None)
-        
-    def _set_position( self, frame, axis, value ):
+
+    def _set_position(self, frame, axis, value):
         if value != '':
-            if self.positions[frame] is None:  
-                self.positions[frame] = [0.0,0.0,0.0]                
-            self.positions[frame][axis] = float(value)  
+            if self.positions[frame] is None:
+                self.positions[frame] = [0.0, 0.0, 0.0]
+            self.positions[frame][axis] = float(value)
 
-
-    def _set_rotation( self, frame, axis, value ):
+    def _set_rotation(self, frame, axis, value):
         if value != '':
             if self.rotations[frame] is None:
-                self.rotations[frame] = [0.0,0.0,0.0,0.0]
+                self.rotations[frame] = [0.0, 0.0, 0.0, 0.0]
             self.rotations[frame][axis] = float(value)
 
     def num_total_frames(self):
         return len(self.times)
 
     def num_valid_frames(self):
-        count = 0
-        for pt in self.positions:
-            if pt is not None:
-                count = count + 1
-        return count
-    
-class Skeleton(object):
+        return sum(1 for pt in self.positions if pt is not None)
+
+
+class RigidBody(FrameObject):
     """Representation of a single rigid body."""
 
     def __init__(self, label, ID):
-        self.label     = label
-        self.ID        = ID
-        self.positions = list()  # list with one element per frame, either None or [x,y,z] float lists
-        self.rotations = list()  # list with one element per frame, either None or [x,y,z,w] float lists
-        self.times     = list()  # list with one element per frame with the capture time   
-        
-        self.bones = dict()
-        self.bone_markers = dict()
-                 
-        return
-
-    def _add_frame(self, t):
-        self.times.append(t)
-        self.positions.append(None)
-        self.rotations.append(None)
-        
-    def _set_position( self, frame, axis, value ):
-        if value != '':
-            if self.positions[frame] is None:  
-                self.positions[frame] = [0.0,0.0,0.0]                
-            self.positions[frame][axis] = float(value)  
+        super().__init__(label, ID)
+        self.rigid_body_markers = {}
+        self.markers = {}
 
 
-    def _set_rotation( self, frame, axis, value ):
-        if value != '':
-            if self.rotations[frame] is None:
-                self.rotations[frame] = [0.0,0.0,0.0,0.0]
-            self.rotations[frame][axis] = float(value)
-
-    def num_total_frames(self):
-        return len(self.times)
-
-    def num_valid_frames(self):
-        count = 0
-        for pt in self.positions:
-            if pt is not None:
-                count = count + 1
-        return count
-
-    
-################################################################
-
-class RigidBodyMarker(object):
-    """Representation of a single rigid body."""
+class Skeleton(FrameObject):
+    """Representation of a single skeleton."""
 
     def __init__(self, label, ID):
-        self.label     = label
-        self.ID        = ID
-        self.positions = list()  # list with one element per frame, either None or [x,y,z] float lists
-        self.times     = list()  # list with one element per frame with the capture time   
+        super().__init__(label, ID)
+        self.bones = {}
+        self.bone_markers = {}
+
+
+class Marker(FrameObject):
+    """Representation of a single marker."""
+
+    pass  # No additional attributes or methods beyond FrameObject
+
+
+class Bone(FrameObject):
+    """Representation of a single bone."""
+
+    pass  # No additional attributes or methods beyond FrameObject
+
+
+class RigidBodyMarker(FrameObject):
+    """Representation of a single rigid body marker."""
+
+    def __init__(self, label, ID):
+        super().__init__(label, ID)
         self.quality = 0.0
 
-        return
 
-    def _add_frame(self, t):
-        self.times.append(t)
-        self.positions.append(None)
-        
-    def _set_position( self, frame, axis, value ):
-        if value != '':
-            if self.positions[frame] is None:
-                self.positions[frame] = [0.0,0.0,0.0] 
-            self.positions[frame][axis] = float(value)
+class BoneMarker(FrameObject):
+    """Representation of a single bone marker."""
 
-    def _set_quality( self, frame, value):
-        if value != '':
-            if self.quality[frame] is None:
-                self.quality[frame] = 0.0
-            self.quality[frame] = float(value)
-
-    def num_total_frames(self):
-        return len(self.times)
-
-    def num_valid_frames(self):
-        count = 0
-        for pt in self.positions:
-            if pt is not None:
-                count = count + 1
-        return count
-
-################################################################
-
-class Marker(object):
-    """Representation of a single rigid body."""
-
-    def __init__(self, label, ID):
-        self.label     = label
-        self.ID        = ID
-        self.positions = list()  # list with one element per frame, either None or [x,y,z] float lists
-        self.times     = list()  # list with one element per frame with the capture time   
-
-        return
-
-    def _add_frame(self, t):
-        self.times.append(t)
-        self.positions.append(None)
-        
-    def _set_position( self, frame, axis, value ):
-        if value != '':
-            if self.positions[frame] is None:
-                self.positions[frame] = [0.0,0.0,0.0]           
-            self.positions[frame][axis] = float(value)
-
-    def num_total_frames(self):
-        return len(self.times)
-
-    def num_valid_frames(self):
-        count = 0
-        for pt in self.positions:
-            if pt is not None:
-                count = count + 1
-        return count
-
-###################################################################
-
-class Bone(object):
-    """Representation of a single rigid body."""
-
-    def __init__(self, label, ID):
-        self.label     = label
-        self.ID        = ID
-        self.positions = list()  # list with one element per frame, either None or [x,y,z] float lists
-        self.rotations = list()  # list with one element per frame, either None or [x,y,z,w] float lists
-        self.times     = list()  # list with one element per frame with the capture time
-                
-        return
-
-    def _add_frame(self, t):
-        self.times.append(t)
-        self.positions.append(None)
-        self.rotations.append(None)
-        
-    def _set_position( self, frame, axis, value ):
-        if value != '':
-            if self.positions[frame] is None:  
-                self.positions[frame] = [0.0,0.0,0.0]                
-            self.positions[frame][axis] = float(value)  
-
-    def _set_rotation( self, frame, axis, value ):
-        if value != '':
-            if self.rotations[frame] is None:
-                self.rotations[frame] = [0.0,0.0,0.0,0.0]
-            self.rotations[frame][axis] = float(value)
-
-    def num_total_frames(self):
-        return len(self.times)
-
-    def num_valid_frames(self):
-        count = 0
-        for pt in self.positions:
-            if pt is not None:
-                count = count + 1
-        return count
-
-################################################################
-
-class BoneMarker(object):
-    """Representation of a single rigid body."""
-
-    def __init__(self, label, ID):
-        self.label     = label
-        self.ID        = ID
-        self.positions = list()  # list with one element per frame, either None or [x,y,z] float lists
-        self.times     = list()  # list with one element per frame with the capture time   
-
-        return
-
-    def _add_frame(self, t):
-        self.times.append(t)
-        self.positions.append(None)
-        
-    def _set_position( self, frame, axis, value ):
-        if value != '':
-            if self.positions[frame] is None:
-                self.positions[frame] = [0.0,0.0,0.0]           
-            self.positions[frame][axis] = float(value)
-
-    def num_total_frames(self):
-        return len(self.times)
-
-    def num_valid_frames(self):
-        count = 0
-        for pt in self.positions:
-            if pt is not None:
-                count = count + 1
-        return count
+    pass  # No additional attributes or methods beyond FrameObject
 
 
 ################################################################
@@ -334,6 +177,9 @@ class Take(object):
 
     # ================================================================
     def _read_header(self, stream, verbose = False):
+        """
+        Read and parse header information from the given stream.
+        """
 
         # Line 1 consists of a series of token, value pairs.
         line1 = next(stream)
@@ -384,6 +230,10 @@ class Take(object):
         # Process lines 3-7 at once, creating named objects to receive each frame of data for supported asset types.
         for col,asset_type,label,ID,field,axis in zip( range(len(self._raw_types)), self._raw_types, self._raw_labels, \
                                                              line5[2:], self._raw_fields, self._raw_axes ):
+            """
+            Handle different asset types and create corresponding objects.
+            """
+            
             if asset_type == 'Rigid Body' :
                 if label in self.rigid_bodies:
                     body = self.rigid_bodies[label]
