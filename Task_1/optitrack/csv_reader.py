@@ -89,10 +89,11 @@ class FrameObject(object):
 class RigidBody(FrameObject):
     """Representation of a single rigid body."""
 
-    def __init__(self, label, ID):
+    def __init__(self, label, root, ID):
         super().__init__(label, ID)
         self.rigid_body_markers = {}
         self.markers = {}
+        self.root = root
 
 
 class Skeleton(FrameObject):
@@ -238,9 +239,10 @@ class Take(object):
                 if label in self.rigid_bodies:
                     body = self.rigid_bodies[label]
                 else:
-                    body = RigidBody(label,ID)
+                    root = label.split(":")[0]
+                    body = RigidBody(label,root, ID)
                     self.rigid_bodies[label] = body
-
+                    
                 # create a column map entry for each rigid body axis
                 if field == 'Rotation':
                     axis_index = {'X':0, 'Y':1, 'Z':2, 'W': 3}[axis]
