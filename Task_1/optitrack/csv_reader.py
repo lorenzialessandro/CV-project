@@ -55,7 +55,7 @@ ColumnMapping = collections.namedtuple('ColumnMapping', ['setter', 'axis', 'colu
 class FrameObject(object):
     """Representation of an object with frame-based data."""
 
-    def __init__(self, label, root, ID):
+    def __init__(self, label, ID):
         self.label = label
         self.ID = ID
         self.positions = []  # list with one element per frame, either None or [x,y,z] float lists
