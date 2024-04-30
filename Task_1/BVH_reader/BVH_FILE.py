@@ -1,7 +1,7 @@
 import re
 import numpy as np
-from Quaternions import Quaternions
-from Animation_deep import Animation
+from BVH_reader.Quaternions import Quaternions
+from BVH_reader.Animation_deep import Animation
 
 
 channel_map = {'Xrotation': 'x',

@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.sparse as sparse
-import Animation_deep as Animation
+import BVH_reader.Animation_deep as Animation
 
 
 """ Maya Functions """
