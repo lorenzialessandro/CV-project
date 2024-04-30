@@ -55,7 +55,7 @@ ColumnMapping = collections.namedtuple('ColumnMapping', ['setter', 'axis', 'colu
 class FrameObject(object):
     """Representation of an object with frame-based data."""
 
-    def __init__(self, label, ID):
+    def __init__(self, label, root, ID):
         self.label = label
         self.ID = ID
         self.positions = []  # list with one element per frame, either None or [x,y,z] float lists
@@ -89,11 +89,11 @@ class FrameObject(object):
 class RigidBody(FrameObject):
     """Representation of a single rigid body."""
 
-    def __init__(self, label, root, ID):
+    def __init__(self, label, ID):
         super().__init__(label, ID)
         self.rigid_body_markers = {}
         self.markers = {}
-        self.root = root
+        
 
 
 class Skeleton(FrameObject):
@@ -239,8 +239,7 @@ class Take(object):
                 if label in self.rigid_bodies:
                     body = self.rigid_bodies[label]
                 else:
-                    root = label.split(":")[0]
-                    body = RigidBody(label,root, ID)
+                    body = RigidBody(label, ID)
                     self.rigid_bodies[label] = body
                     
                 # create a column map entry for each rigid body axis
@@ -257,6 +256,7 @@ class Take(object):
             # Extract bone informations
             elif asset_type == 'Bone':
                 root = label.split(":")[0]
+                label = label.split(":")[1]
                 if root not in self.skeletons:
                     body = Skeleton(root,ID)
                     self.skeletons[root] = body
@@ -281,6 +281,7 @@ class Take(object):
                         
             elif asset_type == 'Bone Marker':
                 root = label.split(":")[0]
+                label = label.split(":")[1]
                 if root not in self.skeletons:
                     body = Skeleton(root,ID)
                     self.skeletons[root] = body
@@ -300,6 +301,7 @@ class Take(object):
             # Extract Rigid Body Marker informations
             elif asset_type == 'Rigid Body Marker':
                 root = label.split(":")[0]
+                label = label.split(":")[1]
                 if root in self.rigid_bodies:
                     if label in self.rigid_bodies[root].rigid_body_markers:
                         body = self.rigid_bodies[root].rigid_body_markers[label]
@@ -321,6 +323,7 @@ class Take(object):
             # Extract marker informations
             elif asset_type == 'Marker':
                 root = label.split(":")[0]
+                label = label.split(":")[1]
                 if root in self.rigid_bodies:
                     if label in self.rigid_bodies[root].markers:
                         body = self.rigid_bodies[root].markers[label]
