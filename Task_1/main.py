@@ -32,14 +32,14 @@ def main(file_type):
         rotations, positions, edges, offsets, joint_names = read_bvh(filename)
         
         # print_bvh_info(rotations, positions, edges, offsets, joint_names) # print bvh info on prompt 
-        write_bvh_info_to_txt(rotations, positions, edges, offsets, joint_names, 'bvh_info.txt') # write bvh info on .txt file
+        # write_bvh_info_to_txt(rotations, positions, edges, offsets, joint_names, 'bvh_info.txt') # write bvh info on .txt file
         
     elif file_type == "C3D":
         # Handle C3D file
         filename = "../material/60fps/marker.c3d"
         frames_data, labels = read_c3d(filename)
 
-        print_c3d_info(frames_data, labels) # print c3d info on prompt 
+        # print_c3d_info(frames_data, labels) # print c3d info on prompt 
         # write_c3d_info_to_txt(frames_data, labels, 'c3d_info.txt') # write c3d info on .txt file
         
     else:
