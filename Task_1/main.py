@@ -13,9 +13,10 @@ def main(file_type):
         filename = "../material/60fps/skeleton.csv"
         x,y,z, lines_map, n_frames = read_csv(filename)
 
-        create_plots(x,y,z, lines_map, n_frames)
+        #create_plots(x,y,z, lines_map, n_frames)
         #create_animation(x, y, z, lines_map, n_frames, filename='skeleton.gif')
-        #plot_single_animation_open3d(x, y, z, lines_map)
+        plot_single_animation_open3d(x, y, z, lines_map)
+        #plot_single_animation_open3d_new(x, y, z, lines_map)
         
     elif file_type == "CSV_RIGID":
         # Handle CSV file with rigid body data
@@ -25,6 +26,7 @@ def main(file_type):
         create_plots(x,y,z, lines_map, n_frames)
         #create_animation(x, y, z, lines_map, n_frames, filename='rigidbody.gif')
         #plot_single_animation_open3d(x, y, z, lines_map)
+        
 
     elif file_type == "BVH":
         # Handle BVH file
@@ -44,7 +46,6 @@ def main(file_type):
         
     else:
         print("Invalid file type.")
-
 
 
 # Function to read data from a .csv file.

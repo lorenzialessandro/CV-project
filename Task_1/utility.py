@@ -298,3 +298,4 @@ def write_bvh_info_to_txt(rotations, positions, edges, offsets, joint_names, out
         for i, offset in enumerate(offsets):
             file.write(f"Joint {i}: {offset}\n")
     print("done!")
+
