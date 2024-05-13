@@ -70,8 +70,6 @@ def plot_single_animation(ax, x, y, z, lines_map, t):
     ax.set_ylim(np.min(y_noNaNs), np.max(y_noNaNs))
     ax.set_zlim(np.min(z_noNaNs), np.max(z_noNaNs))
     
-    
-    
     ax.scatter(x[:, t][~np.isnan(x[:, t])], y[:, t][~np.isnan(y[:, t])], z[:, t][~np.isnan(z[:, t])])
     ax.tick_params(axis='both', which='both', bottom=False, left=False, labelbottom=False, labelleft=False)
 
@@ -82,7 +80,7 @@ def plot_single_animation(ax, x, y, z, lines_map, t):
                 ax.plot([x[i, t], x[id, t]], [y[i, t], y[id, t]], [z[i, t], z[id, t]], "--", color="blue")
 
     # Plot trajectories
-    trajectory_frames = 180  # displace the previous "trajectory_frames" as an interpolation
+    trajectory_frames = 180  # interpolate previous "trajectory_frames" points
     tf = max(0, t - trajectory_frames)
 
     for i in range(len(x)):

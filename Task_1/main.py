@@ -1,11 +1,13 @@
 import numpy as np
 import c3d
 import sys
+import cv2
 
 from utility import * # utilities functions: see utility.py
 import lib.optitrack.csv_reader as csv # optitrack 
 from lib.optitrack.geometry import * # optitrack
 import lib.BVH_reader.BVH_FILE as bhv
+
 
 def main(file_type):
     if file_type == "CSV_SKELETON":
@@ -23,6 +25,8 @@ def main(file_type):
         # Handle CSV file with rigid body data
         filename = "../material/60fps/rigidbody.csv"
         x,y,z, lines_map, n_frames = read_csv(filename)
+        
+        x,y,z = apply_Kallman(x, y, z, n_frames, 4)
         
         #create_plots(x,y,z, lines_map, n_frames)
         create_single_plot(x,y,z, lines_map, n_frames)
@@ -49,6 +53,90 @@ def main(file_type):
     else:
         print("Invalid file type.")
 
+def concat_diagonally(L):
+    shp = L[0].shape
+    mask = np.kron(np.eye(len(L)), np.ones(shp))==1
+    out = np.zeros(np.asarray(shp)*len(L),dtype=int)
+    out[mask] = np.concatenate(L).ravel()
+    return out
+
+def apply_Kallman(x, y, z, n_frames, n_markers) :
+    
+    kalman = cv2.KalmanFilter(7*n_markers, 3*n_markers) # (d,n_params)      
+    
+    measurementMatrix = []
+    transitionMatrix = []
+    processNoiseCov = []
+    measurementNoiseCov = []
+    
+    for _ in range(n_markers) :
+        # maps the state vector to the observed measurements
+        measurementMatrix_i = \
+        np.array([
+            [1, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 1, 0, 0, 0, 0]],np.float32)
+        
+        # maps the current state vector to its next state 
+        # vector based on the defined motion model
+        #
+        # Defines "Legge oraria (?)"
+        t = 1/60
+        transitionMatrix_i = \
+            np.array([
+                [1, 0, 0, t, 0, 0, 0],
+                [0, 1, 0, 0, t, 0, 0],
+                [0, 0, 1, 0, 0, t, 0],
+                [0, 0, 0, 1, 0, 0, t],
+                [0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 0, 0, 0, 1, 0],
+                [0, 0, 0, 0, 0, 0, 1]], np.float32)
+        
+        # Models the uncertainty in the motion model
+        processNoiseCov_i = \
+            np.array([
+                [1, 0, 0, 0, 0, 0, 0],
+                [0, 1, 0, 0, 0, 0, 0],
+                [0, 0, 1, 0, 0, 0, 0],
+                [0, 0, 0, 1, 0, 0, 0],
+                [0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 0, 0, 0, 1, 0],
+                [0, 0, 0, 0, 0, 0, 1]], np.float32) * 0.003
+        
+        # Models the uncertainty of mesurements themselves
+        measurementNoiseCov_i = \
+            np.array([
+                [1, 0, 0],
+                [0, 1, 0],
+                [0, 0, 1]], np.float32) * 1
+        
+        measurementMatrix.append(measurementMatrix_i)
+        transitionMatrix.append(transitionMatrix_i)
+        processNoiseCov.append(processNoiseCov_i)
+        measurementNoiseCov.append(measurementNoiseCov_i)
+        
+    print("measurementMatrix : ", concat_diagonally(tuple(measurementMatrix)).shape)
+    print("transitionMatrix : ", concat_diagonally(tuple(transitionMatrix)).shape)
+    print("processNoiseCov : ", concat_diagonally(tuple(processNoiseCov)).shape)
+    print("measurementNoiseCov : ", concat_diagonally(tuple(measurementNoiseCov)).shape)
+    
+    kalman.measurementMatrix = concat_diagonally(tuple(measurementMatrix))
+    kalman.transitionMatrix = concat_diagonally(tuple(transitionMatrix))
+    kalman.processNoiseCov = concat_diagonally(tuple(processNoiseCov))
+    kalman.measurementNoiseCov = concat_diagonally(tuple(measurementNoiseCov))
+    
+    
+    for t in range(0, n_frames):
+        
+        point = np.array([x[:,t], y[:,t], z[:,t]], np.float32).T # (n_markers x 3)
+        point = np.array([point.flatten()]).T
+        print("point: ", point.shape)
+        
+        kalman.correct(point)
+        prediction = kalman.predict()
+    
+    
+    return x, y, z
 
 # Function to read data from a .csv file.
 def read_csv(filename):
@@ -171,8 +259,6 @@ def read_c3d(filename):
             labels = reader.point_labels     
     
     return frames_data, labels
-
-
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
