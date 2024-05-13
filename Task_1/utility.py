@@ -60,11 +60,19 @@ def plot_single_animation(ax, x, y, z, lines_map, t):
     :param lines_map: Mapping of lines
     :param t: Current frame
     """
+    
     ax.clear()
-    ax.set_xlim(np.min(x), np.max(x))
-    ax.set_ylim(np.min(y), np.max(y))
-    ax.set_zlim(np.min(z), np.max(z))
-    ax.scatter(x[:, t], y[:, t], z[:, t])
+    
+    x_noNaNs = x[~np.isnan(x)]
+    y_noNaNs = y[~np.isnan(y)]
+    z_noNaNs = z[~np.isnan(z)]
+    ax.set_xlim(np.min(x_noNaNs), np.max(x_noNaNs))
+    ax.set_ylim(np.min(y_noNaNs), np.max(y_noNaNs))
+    ax.set_zlim(np.min(z_noNaNs), np.max(z_noNaNs))
+    
+    
+    
+    ax.scatter(x[:, t][~np.isnan(x[:, t])], y[:, t][~np.isnan(y[:, t])], z[:, t][~np.isnan(z[:, t])])
     ax.tick_params(axis='both', which='both', bottom=False, left=False, labelbottom=False, labelleft=False)
 
     # Plot connections
@@ -117,6 +125,28 @@ def create_plots(x, y, z, lines_map, n_frames):
         plt.pause(0.1)  # Adjust the pause time as needed
 
     plt.show()
+
+def create_single_plot(x, y, z, lines_map, n_frames) :
+    """
+    Wrapper function to create and display multiple subplots.
+
+    :param x: x points
+    :param y: y points
+    :param z: z points
+    :param lines_map: Mapping of lines
+    :param n_frames: Total number of frames
+    """
+
+    ax = plt.figure().add_subplot(projection='3d')
+    ax.view_init(elev=60, azim=20, roll=110)
+
+    # Iterate over frames and update plot for each subplot
+    for t in range(n_frames):
+        plot_single_animation(ax, x, y, z, lines_map, t)
+        plt.pause(0.01)  # Adjust the pause time as needed
+
+    plt.show()
+    
 
 
 # Function to create and save an animation as GIF

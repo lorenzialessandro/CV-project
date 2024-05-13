@@ -15,7 +15,8 @@ def main(file_type):
 
         #create_plots(x,y,z, lines_map, n_frames)
         #create_animation(x, y, z, lines_map, n_frames, filename='skeleton.gif')
-        plot_single_animation_open3d(x, y, z, lines_map)
+        #plot_single_animation_open3d(x, y, z, lines_map)
+        create_single_plot(x,y,z, lines_map, n_frames)
         #plot_single_animation_open3d_new(x, y, z, lines_map)
         
     elif file_type == "CSV_RIGID":
@@ -23,7 +24,8 @@ def main(file_type):
         filename = "../material/60fps/rigidbody.csv"
         x,y,z, lines_map, n_frames = read_csv(filename)
         
-        create_plots(x,y,z, lines_map, n_frames)
+        #create_plots(x,y,z, lines_map, n_frames)
+        create_single_plot(x,y,z, lines_map, n_frames)
         #create_animation(x, y, z, lines_map, n_frames, filename='rigidbody.gif')
         #plot_single_animation_open3d(x, y, z, lines_map)
         
@@ -101,14 +103,14 @@ def read_csv(filename):
 
     #points = bones_pos + rigid_body_markers_pos + markers_pos
     points = rigid_body_markers_pos
-
-    #points = [[0.0,0.0,0.0] if elem is None else elem for elem in markers for markers in points ]
-    points = [[[0.0, 0.0, 0.0] if frame is None else frame for frame in markers] for markers in points]
+    points = [[[np.nan, np.nan, np.nan] if frame is None else frame for frame in markers] for markers in points]
     np_points = np.array(points)
 
+    # np_points shape is : (rigid body, frame, axis)
     x = np_points[:,:,0]
     y = np_points[:,:,1]
     z = np_points[:,:,2]
+
 
     return x,y,z, lines_map, n_frames
 
@@ -116,7 +118,7 @@ def read_csv(filename):
 
 # Function to read data from a .bvh file.
 def read_bvh(filename):
-    animation, joint_names, frametime = bhv.read_bvh(filename) # Call lib function
+    animation, joint_names, _ = bhv.read_bvh(filename) # Call lib function
 
     # Relative rotation for each joint
     rotations = animation.rotations
