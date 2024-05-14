@@ -8,12 +8,16 @@ import lib.optitrack.csv_reader as csv # optitrack
 from lib.optitrack.geometry import * # optitrack
 import lib.BVH_reader.BVH_FILE as bhv
 
+from KF_utils import apply_KallmanFilter
+from PF_utils import apply_ParticleFilter
 
 def main(file_type):
+    
+    fps = 360
     if file_type == "CSV_SKELETON":
         # Handle CSV file with skeleton data
-        filename = "../material/60fps/skeleton.csv"
-        x,y,z, lines_map, n_frames = read_csv(filename)
+        filename = "../material/360fps/skeleton.csv"
+        x, y, z, lines_map, n_frames = read_csv(filename)
 
         #create_plots(x,y,z, lines_map, n_frames)
         #create_animation(x, y, z, lines_map, n_frames, filename='skeleton.gif')
@@ -23,20 +27,21 @@ def main(file_type):
         
     elif file_type == "CSV_RIGID":
         # Handle CSV file with rigid body data
-        filename = "../material/60fps/rigidbody.csv"
-        x,y,z, lines_map, n_frames = read_csv(filename)
+        filename = "../material/360fps/rigidbody.csv"
+        x, y, z, lines_map, n_frames = read_csv(filename)
         
-        x,y,z = apply_Kallman(x, y, z, n_frames, 4)
+        #x,y,z = apply_KallmanFilter(x, y, z, n_frames, 4, fps)
+        x, y, z = apply_ParticleFilter(x, y, z, n_frames, 4)
         
         #create_plots(x,y,z, lines_map, n_frames)
         create_single_plot(x,y,z, lines_map, n_frames)
-        #create_animation(x, y, z, lines_map, n_frames, filename='rigidbody.gif')
+        #create_animation(x, y, z, lines_map, 1000, filename='rigidbody.gif')
         #plot_single_animation_open3d(x, y, z, lines_map)
         
 
     elif file_type == "BVH":
         # Handle BVH file
-        filename = "../material/60fps/animation.bvh"
+        filename = "../material/360fps/animation.bvh"
         rotations, positions, edges, offsets, joint_names = read_bvh(filename)
         
         # print_bvh_info(rotations, positions, edges, offsets, joint_names) # print bvh info on prompt 
@@ -44,7 +49,7 @@ def main(file_type):
         
     elif file_type == "C3D":
         # Handle C3D file
-        filename = "../material/60fps/marker.c3d"
+        filename = "../material/360fps/marker.c3d"
         frames_data, labels = read_c3d(filename)
 
         # print_c3d_info(frames_data, labels) # print c3d info on prompt 
@@ -53,67 +58,6 @@ def main(file_type):
     else:
         print("Invalid file type.")
 
-def duplicate_diagonally(pattern, repetitions):
-    
-    L = tuple([pattern.copy() for _ in range(repetitions)])
-    
-    shp = L[0].shape
-    mask = np.kron(np.eye(len(L)), np.ones(shp))==1
-    out = np.zeros(np.asarray(shp)*len(L),dtype=np.float32)
-    out[mask] = np.concatenate(L).ravel()
-    
-    return out
-
-def apply_Kallman(x, y, z, n_frames, n_markers) :
-    
-    measure_params = 3
-    dynam_params = 7
-    total_measure_params = measure_params * n_markers
-    total_dynam_params = dynam_params * n_markers
-    
-    kalman = cv2.KalmanFilter(total_dynam_params, total_measure_params) # (d,n_params)      
-    
-    # maps the state vector to the observed measurements
-    kalman.measurementMatrix = np.eye(total_measure_params, total_dynam_params, dtype=np.float32)
-    # maps the current state vector to its next state vector based on the defined motion model
-    dt = 1/60
-    single_point_transitionMat = np.array([
-        [1, 0, 0, dt,  0,  0,  0],
-        [0, 1, 0,  0, dt,  0,  0],
-        [0, 0, 1,  0,  0, dt,  0],
-        [0, 0, 0,  1,  0,  0, dt],
-        [0, 0, 0,  0,  1,  0,  0],
-        [0, 0, 0,  0,  0,  1,  0],
-        [0, 0, 0,  0,  0,  0,  1],
-    ], dtype=np.float32)
-    
-    kalman.transitionMatrix = duplicate_diagonally(single_point_transitionMat, n_markers)
-    # Models the uncertainty in the motion model
-    kalman.processNoiseCov = np.identity(total_dynam_params, dtype=np.float32) * 1e-5
-    # Models the uncertainty of mesurements themselves
-    kalman.measurementNoiseCov = np.identity(total_measure_params, dtype=np.float32) * 1e-5  
-    
-    for t in range(0, n_frames):
-        
-        point = np.array([x[:,t], y[:,t], z[:,t]], np.float32).T
-        point = np.array([point.flatten()]).T
-        
-        prediction = kalman.predict()
-        
-        # Correct point with Kallman prediction if it's absent
-        for i in range(point.shape[0]) :
-            if np.isnan(point[i,0]) :
-                point[i,0] = prediction[i,0]
-        
-        # Update the model
-        kalman.correct(point)
-        
-        point = point.reshape(4,3)
-        x[:,t] = point[:,0]
-        y[:,t] = point[:,1]
-        z[:,t] = point[:,2]
-        
-    return x, y, z
 
 # Function to read data from a .csv file.
 def read_csv(filename):

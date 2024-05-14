@@ -168,7 +168,7 @@ def create_animation(x, y, z, lines_map, n_frames, filename='animation.gif'):
         plot_single_animation(ax, x, y, z, lines_map, frame)
 
     anim = FuncAnimation(fig, update, frames=n_frames, interval=100)
-    anim.save("animations/"+filename, writer='pillow')
+    anim.save("animations/"+filename, writer='pillow', fps=60)
 
 
 # Function to display animation in a single subplot using Open3D
