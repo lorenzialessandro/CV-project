@@ -26,7 +26,7 @@ def main(file_type):
         filename = "../material/60fps/rigidbody.csv"
         x,y,z, lines_map, n_frames = read_csv(filename)
         
-        #x,y,z = apply_Kallman(x, y, z, n_frames, 4)
+        x,y,z = apply_Kallman(x, y, z, n_frames, 4)
         
         #create_plots(x,y,z, lines_map, n_frames)
         create_single_plot(x,y,z, lines_map, n_frames)
@@ -56,7 +56,7 @@ def main(file_type):
 def concat_diagonally(L):
     shp = L[0].shape
     mask = np.kron(np.eye(len(L)), np.ones(shp))==1
-    out = np.zeros(np.asarray(shp)*len(L),dtype=int)
+    out = np.zeros(np.asarray(shp)*len(L),dtype=np.float32)
     out[mask] = np.concatenate(L).ravel()
     return out
 
@@ -130,12 +130,12 @@ def apply_Kallman(x, y, z, n_frames, n_markers) :
         
         point = np.array([x[:,t], y[:,t], z[:,t]], np.float32).T # (n_markers x 3)
         point = np.array([point.flatten()]).T
-        print("point: ", point.shape)
         
         kalman.correct(point)
         prediction = kalman.predict()
-    
-    
+
+        #print(prediction)
+
     return x, y, z
 
 # Function to read data from a .csv file.
