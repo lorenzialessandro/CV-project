@@ -61,10 +61,12 @@ class FrameObject(object):
         self.positions = []  # list with one element per frame, either None or [x,y,z] float lists
         self.rotations = []  # list with one element per frame, either None or [x,y,z,w] float lists
         self.times = []  # list with one element per frame with the capture time
+        self.qualities = []
 
     def _add_frame(self, t):
         self.times.append(t)
         self.positions.append(None)
+        self.qualities.append(None)
         self.rotations.append(None)
 
     def _set_position(self, frame, axis, value):
@@ -72,6 +74,12 @@ class FrameObject(object):
             if self.positions[frame] is None:
                 self.positions[frame] = [0.0, 0.0, 0.0]
             self.positions[frame][axis] = float(value)
+
+    def _set_quality(self, frame, axis, value):
+        if value != '':
+            if self.qualities[frame] is None:
+                self.qualities[frame] = 0.0
+            self.qualities[frame] = float(value)
 
     def _set_rotation(self, frame, axis, value):
         if value != '':
@@ -122,7 +130,6 @@ class RigidBodyMarker(FrameObject):
 
     def __init__(self, label, ID):
         super().__init__(label, ID)
-        self.quality = 0.0
 
 
 class BoneMarker(FrameObject):
@@ -316,7 +323,7 @@ class Take(object):
                     
                     if field == 'Marker Quality':
                         axis_index = {'' : 0}[axis]
-                        setter = body._set_position
+                        setter = body._set_quality
                         self._column_map.append(ColumnMapping(setter, axis_index, col))
             
             

@@ -26,7 +26,7 @@ def main(file_type):
         filename = "../material/60fps/rigidbody.csv"
         x,y,z, lines_map, n_frames = read_csv(filename)
         
-        x,y,z = apply_Kallman(x, y, z, n_frames, 4)
+        #x,y,z = apply_Kallman(x, y, z, n_frames, 4)
         
         #create_plots(x,y,z, lines_map, n_frames)
         create_single_plot(x,y,z, lines_map, n_frames)
@@ -157,40 +157,43 @@ def read_csv(filename):
     bodies = take.rigid_bodies
     skeletons = take.skeletons
 
-    bones_pos = []
+    ragnetto_pos = []
     rigid_body_markers_pos = []
     markers_pos = []
-
+    
     if len(bodies) > 0:
         for body in bodies: 
-            bones = take.rigid_bodies[body]
-            n_frames = bones.num_total_frames()
+            ragnetto = take.rigid_bodies[body]
+            n_frames = ragnetto.num_total_frames()
             
-            bones_pos.append(bones.positions)
-            for marker in bones.rigid_body_markers.values():
+            ragnetto_pos.append(ragnetto.positions)
+            for marker in ragnetto.rigid_body_markers.values():
                 rigid_body_markers_pos.append(marker.positions)
                 
-            for marker in bones.rigid_body_markers.values():
+            for marker in ragnetto.markers.values():
                 markers_pos.append(marker.positions)
 
             lines_map = {}
 
+            points = rigid_body_markers_pos
+
+    bone_markers = []
+    bones=[]
     if len(skeletons) > 0:
         for body in skeletons: 
             skeleton = take.skeletons[body]
             n_frames = skeleton.bones["Hip"].num_total_frames()
             
             for marker in skeleton.bones.values():
-                rigid_body_markers_pos.append(marker.positions)
+                bones.append(marker.positions)
                 
             for marker in skeleton.bone_markers.values():
-                markers_pos.append(marker.positions)
+                bone_markers.append(marker.positions)
 
             lines_map = process_skeleton(skeleton)
             
+            points = bones
 
-    #points = bones_pos + rigid_body_markers_pos + markers_pos
-    points = rigid_body_markers_pos
     points = [[[np.nan, np.nan, np.nan] if frame is None else frame for frame in markers] for markers in points]
     np_points = np.array(points)
 
@@ -198,7 +201,6 @@ def read_csv(filename):
     x = np_points[:,:,0]
     y = np_points[:,:,1]
     z = np_points[:,:,2]
-
 
     return x,y,z, lines_map, n_frames
 
@@ -262,7 +264,8 @@ def read_c3d(filename):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python script.py <file_type>")
+        print("argv error")
+        print("Usage: python script.py CSV_SKELETON | CSV_RIGID | BVH | C3D")
         sys.exit(1)
     
     file_type = sys.argv[1]
