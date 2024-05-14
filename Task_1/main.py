@@ -62,20 +62,13 @@ def concat_diagonally(L):
 
 def apply_Kallman(x, y, z, n_frames, n_markers) :
     
-    kalman = cv2.KalmanFilter(7*n_markers, 3*n_markers) # (d,n_params)      
+    dynam_params = 7 * n_markers
+    measure_params = 3 * n_markers
     
-    measurementMatrix = []
+    kalman = cv2.KalmanFilter(dynam_params, measure_params) # (d,n_params)      
+    
     transitionMatrix = []
-    processNoiseCov = []
-    measurementNoiseCov = []
-    
     for _ in range(n_markers) :
-        # maps the state vector to the observed measurements
-        measurementMatrix_i = \
-        np.array([
-            [1, 0, 0, 0, 0, 0, 0],
-            [0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 1, 0, 0, 0, 0]],np.float32)
         
         # maps the current state vector to its next state 
         # vector based on the defined motion model
@@ -92,50 +85,36 @@ def apply_Kallman(x, y, z, n_frames, n_markers) :
                 [0, 0, 0, 0, 0, 1, 0],
                 [0, 0, 0, 0, 0, 0, 1]], np.float32)
         
-        # Models the uncertainty in the motion model
-        processNoiseCov_i = \
-            np.array([
-                [1, 0, 0, 0, 0, 0, 0],
-                [0, 1, 0, 0, 0, 0, 0],
-                [0, 0, 1, 0, 0, 0, 0],
-                [0, 0, 0, 1, 0, 0, 0],
-                [0, 0, 0, 0, 1, 0, 0],
-                [0, 0, 0, 0, 0, 1, 0],
-                [0, 0, 0, 0, 0, 0, 1]], np.float32) * 0.003
-        
-        # Models the uncertainty of mesurements themselves
-        measurementNoiseCov_i = \
-            np.array([
-                [1, 0, 0],
-                [0, 1, 0],
-                [0, 0, 1]], np.float32) * 1
-        
-        measurementMatrix.append(measurementMatrix_i)
         transitionMatrix.append(transitionMatrix_i)
-        processNoiseCov.append(processNoiseCov_i)
-        measurementNoiseCov.append(measurementNoiseCov_i)
         
-    print("measurementMatrix : ", concat_diagonally(tuple(measurementMatrix)).shape)
-    print("transitionMatrix : ", concat_diagonally(tuple(transitionMatrix)).shape)
-    print("processNoiseCov : ", concat_diagonally(tuple(processNoiseCov)).shape)
-    print("measurementNoiseCov : ", concat_diagonally(tuple(measurementNoiseCov)).shape)
-    
-    kalman.measurementMatrix = concat_diagonally(tuple(measurementMatrix))
+    # maps the state vector to the observed measurements
+    kalman.measurementMatrix = np.eye(measure_params, dynam_params, dtype=np.float32)
     kalman.transitionMatrix = concat_diagonally(tuple(transitionMatrix))
-    kalman.processNoiseCov = concat_diagonally(tuple(processNoiseCov))
-    kalman.measurementNoiseCov = concat_diagonally(tuple(measurementNoiseCov))
-    
+    # Models the uncertainty in the motion model
+    kalman.processNoiseCov = np.identity(dynam_params, dtype=np.float32) * 1e-5
+    # Models the uncertainty of mesurements themselves
+    kalman.measurementNoiseCov = np.identity(measure_params, dtype=np.float32) * 1e-5  
     
     for t in range(0, n_frames):
         
         point = np.array([x[:,t], y[:,t], z[:,t]], np.float32).T # (n_markers x 3)
         point = np.array([point.flatten()]).T
         
-        kalman.correct(point)
         prediction = kalman.predict()
-
-        #print(prediction)
-
+               
+        # Correct point with Kallman prediction if it's absent
+        for i in range(point.shape[0]) :
+            if np.isnan(point[i,0]) :
+                point[i,0] = prediction[i,0]
+                
+        # Update the model
+        kalman.correct(point)
+        
+        point = point.reshape(4,3)
+        x[:,t] = point[:,0]
+        y[:,t] = point[:,1]
+        z[:,t] = point[:,2]
+        
     return x, y, z
 
 # Function to read data from a .csv file.
