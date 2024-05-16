@@ -17,7 +17,7 @@ def main(file_type):
     if file_type == "CSV_SKELETON":
         # Handle CSV file with skeleton data
         filename = "../material/360fps/skeleton.csv"
-        x, y, z, lines_map, n_frames = read_csv(filename)
+        x, y, z, lines_map, n_frames, n_markers = read_csv(filename)
 
         #create_plots(x,y,z, lines_map, n_frames)
         #create_animation(x, y, z, lines_map, n_frames, filename='skeleton.gif')
@@ -28,13 +28,13 @@ def main(file_type):
     elif file_type == "CSV_RIGID":
         # Handle CSV file with rigid body data
         filename = "../material/360fps/rigidbody.csv"
-        x, y, z, lines_map, n_frames = read_csv(filename)
+        x, y, z, lines_map, n_frames, n_markers = read_csv(filename)
         
-        #x,y,z = apply_KallmanFilter(x, y, z, n_frames, 4, fps)
-        x, y, z = apply_ParticleFilter(x, y, z, n_frames, 4)
+        #x,y,z = apply_KallmanFilter(x, y, z, n_frames, n_markers, fps)
+        x, y, z = apply_ParticleFilter(x, y, z, n_frames, n_markers)
         
         #create_plots(x,y,z, lines_map, n_frames)
-        create_single_plot(x,y,z, lines_map, n_frames)
+        create_single_plot(x,y,z, lines_map, n_frames, n_markers)
         #create_animation(x, y, z, lines_map, 1000, filename='rigidbody.gif')
         #plot_single_animation_open3d(x, y, z, lines_map)
         
@@ -123,7 +123,7 @@ def read_csv(filename):
     y = np_points[:,:,1]
     z = np_points[:,:,2]
 
-    return x,y,z, lines_map, n_frames
+    return x,y,z, lines_map, n_frames, x.shape[0]
 
 
 

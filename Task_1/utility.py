@@ -49,7 +49,7 @@ def process_skeleton(skeleton):
 
 
 # Function to display animation in a single subplot
-def plot_single_animation(ax, x, y, z, lines_map, t):
+def plot_single_animation(ax, x, y, z, lines_map, t, n_markers):
     """
     Function to display animation in a single subplot.
 
@@ -70,9 +70,13 @@ def plot_single_animation(ax, x, y, z, lines_map, t):
     ax.set_ylim(np.min(y_noNaNs), np.max(y_noNaNs))
     ax.set_zlim(np.min(z_noNaNs), np.max(z_noNaNs))
     
-    ax.scatter(x[:, t][~np.isnan(x[:, t])], y[:, t][~np.isnan(y[:, t])], z[:, t][~np.isnan(z[:, t])])
+    # scatter markers
+    ax.scatter(x[:n_markers, t][~np.isnan(x[:n_markers, t])], y[:n_markers, t][~np.isnan(y[:n_markers, t])], z[:n_markers, t][~np.isnan(z[:n_markers, t])], color = "blue")
+    # scatter particles (if there's any)
+    if x.shape[0] > n_markers :
+        ax.scatter(x[n_markers:, t][~np.isnan(x[n_markers:, t])], y[n_markers:, t][~np.isnan(y[n_markers:, t])], z[n_markers:, t][~np.isnan(z[n_markers:, t])], s=0.4, color="red")
+    
     ax.tick_params(axis='both', which='both', bottom=False, left=False, labelbottom=False, labelleft=False)
-
     # Plot connections
     if len(lines_map) > 0:
         for i in range(len(x[:, t])):
@@ -83,7 +87,7 @@ def plot_single_animation(ax, x, y, z, lines_map, t):
     trajectory_frames = 180  # interpolate previous "trajectory_frames" points
     tf = max(0, t - trajectory_frames)
 
-    for i in range(len(x)):
+    for i in range(n_markers):
         ax.plot(x[i, tf:t], y[i, tf:t], z[i, tf:t], color="red", alpha=0.2)
 
 
@@ -124,7 +128,7 @@ def create_plots(x, y, z, lines_map, n_frames):
 
     plt.show()
 
-def create_single_plot(x, y, z, lines_map, n_frames) :
+def create_single_plot(x, y, z, lines_map, n_frames, n_markers) :
     """
     Wrapper function to create and display multiple subplots.
 
@@ -140,7 +144,7 @@ def create_single_plot(x, y, z, lines_map, n_frames) :
 
     # Iterate over frames and update plot for each subplot
     for t in range(n_frames):
-        plot_single_animation(ax, x, y, z, lines_map, t)
+        plot_single_animation(ax, x, y, z, lines_map, t, n_markers)
         plt.pause(0.01)  # Adjust the pause time as needed
 
     plt.show()
