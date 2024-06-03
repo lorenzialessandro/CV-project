@@ -42,12 +42,21 @@ def apply_KallmanFilter(x, y, z, n_frames, n_markers, fps) :
     # Models the uncertainty of mesurements themselves
     kalman.measurementNoiseCov = np.identity(total_measure_params, dtype=np.float32) * 1e-5  
     
+    # Setup variable to include prediction in the output too
+    x_out = np.zeros((n_markers + n_markers, n_frames), dtype=np.float32)
+    y_out = np.zeros((n_markers + n_markers, n_frames), dtype=np.float32)
+    z_out = np.zeros((n_markers + n_markers, n_frames), dtype=np.float32)
+    
     for t in range(0, n_frames):
         
         point = np.array([x[:,t], y[:,t], z[:,t]], np.float32).T
         point = np.array([point.flatten()]).T
         
         prediction = kalman.predict()
+
+        for i in range(total_measure_params):
+            if np.isnan(prediction[i,0]):
+                exit()
         
         # Correct point with Kallman prediction if it's absent
         for i in range(point.shape[0]) :
@@ -57,9 +66,15 @@ def apply_KallmanFilter(x, y, z, n_frames, n_markers, fps) :
         # Update the model
         kalman.correct(point)
         
-        point = point.reshape(4,3)
+        point = point.reshape(n_markers, 3)
         x[:,t] = point[:,0]
         y[:,t] = point[:,1]
         z[:,t] = point[:,2]
         
-    return x, y, z
+        prediction = prediction[:total_measure_params, 0].reshape(n_markers, 3)
+        # Append prediction value to the output
+        x_out[:,t] = np.hstack((x[:,t], prediction[:,0]))
+        y_out[:,t] = np.hstack((y[:,t], prediction[:,1]))
+        z_out[:,t] = np.hstack((z[:,t], prediction[:,2]))  
+        
+    return x_out, y_out, z_out

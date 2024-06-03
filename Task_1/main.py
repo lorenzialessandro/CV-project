@@ -1,7 +1,6 @@
 import numpy as np
 import c3d
 import sys
-import cv2
 
 from utility import * # utilities functions: see utility.py
 import lib.optitrack.csv_reader as csv # optitrack 
@@ -11,7 +10,7 @@ import lib.BVH_reader.BVH_FILE as bhv
 from KF_utils import apply_KallmanFilter
 from PF_utils import apply_ParticleFilter
 
-def main(file_type):
+def main(file_type, filter_type):
     
     fps = 360
     if file_type == "CSV_SKELETON":
@@ -19,10 +18,16 @@ def main(file_type):
         filename = "../material/360fps/skeleton.csv"
         x, y, z, lines_map, n_frames, n_markers = read_csv(filename)
 
+        if filter_type is not None :
+            if filter_type == "KF" :
+                x, y, z = apply_KallmanFilter(x, y, z, n_frames, n_markers, fps)
+            elif filter_type == "PF" :
+                x, y, z = apply_ParticleFilter(x, y, z, n_frames, n_markers)
+        
         #create_plots(x,y,z, lines_map, n_frames)
         #create_animation(x, y, z, lines_map, n_frames, filename='skeleton.gif')
         #plot_single_animation_open3d(x, y, z, lines_map)
-        create_single_plot(x,y,z, lines_map, n_frames)
+        create_single_plot(x, y, z, lines_map, n_frames, n_markers)
         #plot_single_animation_open3d_new(x, y, z, lines_map)
         
     elif file_type == "CSV_RIGID":
@@ -30,14 +35,16 @@ def main(file_type):
         filename = "../material/360fps/rigidbody.csv"
         x, y, z, lines_map, n_frames, n_markers = read_csv(filename)
         
-        #x,y,z = apply_KallmanFilter(x, y, z, n_frames, n_markers, fps)
-        x, y, z = apply_ParticleFilter(x, y, z, n_frames, n_markers)
+        if filter_type is not None :
+            if filter_type == "KF" :
+                x, y, z = apply_KallmanFilter(x, y, z, n_frames, n_markers, fps)
+            elif filter_type == "PF" :
+                x, y, z = apply_ParticleFilter(x, y, z, n_frames, n_markers)
         
         #create_plots(x,y,z, lines_map, n_frames)
-        create_single_plot(x,y,z, lines_map, n_frames, n_markers)
-        #create_animation(x, y, z, lines_map, 1000, filename='rigidbody.gif')
+        #create_single_plot(x,y,z, lines_map, n_frames, n_markers)
+        create_animation(x, y, z, lines_map, 1000, n_markers, filename='ragnetto-PF.gif')
         #plot_single_animation_open3d(x, y, z, lines_map)
-        
 
     elif file_type == "BVH":
         # Handle BVH file
@@ -184,10 +191,18 @@ def read_c3d(filename):
     return frames_data, labels
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("argv error")
-        print("Usage: python script.py CSV_SKELETON | CSV_RIGID | BVH | C3D")
+    nargs = len(sys.argv)
+    if nargs < 2 or nargs > 3 :
+        print("Arguments error")
+        print("Expected argument 1 mandatory + 1 optional")
+        print("     Arg1 : { CSV_SKELETON | CSV_RIGID | BVH | C3D }")
+        print("     Arg2 : { KF , PF }")
         sys.exit(1)
-    
+        
     file_type = sys.argv[1]
-    main(file_type)
+    filter_type = None
+    
+    if nargs == 3 :
+        filter_type = sys.argv[2]
+        
+    main(file_type, filter_type)

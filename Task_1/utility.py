@@ -152,7 +152,7 @@ def create_single_plot(x, y, z, lines_map, n_frames, n_markers) :
 
 
 # Function to create and save an animation as GIF
-def create_animation(x, y, z, lines_map, n_frames, filename='animation.gif'):
+def create_animation(x, y, z, lines_map, n_frames, n_markers, filename='animation.gif'):
     """
     Function to create and save an animation as GIF.
 
@@ -169,7 +169,7 @@ def create_animation(x, y, z, lines_map, n_frames, filename='animation.gif'):
 
     def update(frame):
         ax.clear()
-        plot_single_animation(ax, x, y, z, lines_map, frame)
+        plot_single_animation(ax, x, y, z, lines_map, frame, n_markers)
 
     anim = FuncAnimation(fig, update, frames=n_frames, interval=100)
     anim.save("animations/"+filename, writer='pillow', fps=60)
