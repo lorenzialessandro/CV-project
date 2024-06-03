@@ -128,7 +128,7 @@ def create_plots(x, y, z, lines_map, n_frames):
 
     plt.show()
 
-def create_single_plot(x, y, z, lines_map, n_frames, n_markers) :
+def create_single_plot(x, y, z, lines_map, n_frames, n_markers, rot) :
     """
     Wrapper function to create and display multiple subplots.
 
@@ -140,7 +140,9 @@ def create_single_plot(x, y, z, lines_map, n_frames, n_markers) :
     """
 
     ax = plt.figure().add_subplot(projection='3d')
-    ax.view_init(elev=60, azim=20, roll=110)
+    elev, azim, roll = rot
+    ax.view_init(elev=elev, azim=azim, roll=roll)
+    #ax.view_init(elev=60, azim=20, roll=110)
 
     # Iterate over frames and update plot for each subplot
     for t in range(n_frames):
