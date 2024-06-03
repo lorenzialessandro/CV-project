@@ -42,8 +42,8 @@ def main(file_type, filter_type):
                 x, y, z = apply_ParticleFilter(x, y, z, n_frames, n_markers)
         
         #create_plots(x,y,z, lines_map, n_frames)
-        #create_single_plot(x,y,z, lines_map, n_frames, n_markers)
-        create_animation(x, y, z, lines_map, 1000, n_markers, filename='ragnetto-PF.gif')
+        create_single_plot(x,y,z, lines_map, n_frames, n_markers)
+        #create_animation(x, y, z, lines_map, 1000, n_markers, filename='ragnetto-PF.gif')
         #plot_single_animation_open3d(x, y, z, lines_map)
 
     elif file_type == "BVH":
