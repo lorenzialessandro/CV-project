@@ -128,16 +128,22 @@ def create_plots(x, y, z, lines_map, n_frames):
 
     plt.show()
 
-def create_single_plot(x, y, z, lines_map, n_frames, n_markers, rot) :
+def create_single_plot(x,y,z, bones, bones_map,  n_frames, n_markers, rot):
     """
     Wrapper function to create and display multiple subplots.
 
     :param x: x points
     :param y: y points
     :param z: z points
+    :param bones: bones
+    :bones_map bones_map : bones_map
     :param lines_map: Mapping of lines
     :param n_frames: Total number of frames
     """
+    # Map bone names to indices
+    bones_index_map = {bone: bones.index(bone) for bone in bones}
+    # Map bone indices to their connections
+    lines_map = {bones_index_map[bone]: [bones_index_map[child] for child in children] for bone, children in bones_map.items()}
 
     ax = plt.figure().add_subplot(projection='3d')
     elev, azim, roll = rot

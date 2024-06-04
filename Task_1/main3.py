@@ -5,9 +5,9 @@ import numpy as np
 from utility import * # utilities functions: see utility.py
 
 # Define bones dictionary + list
-guy_bones = ["Hips","LeftUpLeg","LeftLeg","LeftFoot","LeftToeBase","LeftToe_End","RightUpLeg","RightLeg","RightFoot","RightToeBase","RightToe_End","Spine","Spine1","Spine2","LeftShoulder","LeftArm","LeftForeArm","LeftHand","LeftHandIndex1","LeftHandIndex2","LeftHandIndex3","LeftHandIndex4","LeftHandMiddle1","LeftHandMiddle2","LeftHandMiddle3","LeftHandMiddle4","LeftHandPinky1","LeftHandPinky2","LeftHandPinky3","LeftHandPinky4","LeftHandRing1","LeftHandRing2","LeftHandRing3","LeftHandRing4","LeftHandThumb1","LeftHandThumb2","LeftHandThumb3","LeftHandThumb4","Neck","Neck1","Head","HeadTop_End","LeftEye","RightEye","RightShoulder","RightArm","RightForeArm","RightHand","RightHandIndex1","RightHandIndex2","RightHandIndex3","RightHandIndex4","RightHandMiddle1","RightHandMiddle2","RightHandMiddle3","RightHandMiddle4","RightHandPinky1","RightHandPinky2","RightHandPinky3","RightHandPinky4","RightHandRing1","RightHandRing2","RightHandRing3","RightHandRing4","RightHandThumb1","RightHandThumb2","RightHandThumb3","RightHandThumb4"]
+guy_bones = []
 guy_bones_map = {
-    "Hips": ["LeftUpLeg", "RightUpLeg"],
+    "Hips": ["LeftUpLeg", "RightUpLeg", "Spine"],
     "LeftUpLeg": ["LeftLeg"],
     "LeftLeg": ["LeftFoot"],
     "LeftFoot": ["LeftToeBase"],
@@ -62,7 +62,7 @@ guy_bones_map = {
     "RightShoulder": ["RightArm"],
     "RightArm": ["RightForeArm"],
     "RightForeArm": ["RightHand"],
-    "RightHand": ["RightHandIndex1"],
+    "RightHand": ["RightHandIndex1", "RightHandMiddle1", "RightHandPinky1", "RightHandRing1", "RightHandThumb1"],
     "RightHandIndex1": ["RightHandIndex2"],
     "RightHandIndex2": ["RightHandIndex3"],
     "RightHandIndex3": ["RightHandIndex4"],
@@ -133,9 +133,9 @@ if __name__ == "__main__":
 
     n_markers = x.shape[0]
     n_frames = x.shape[1]
-    lines_map = get_skeleton_lines(guy_bones, guy_bones_map)
+    guy_bones = [bone["name"] for bone in data_guy["Body"][0]["Positions"]]
 
     rot = (15, 45, 0)
-    create_single_plot(x,y,z, lines_map, n_frames, n_markers, rot)
+    create_single_plot(x,y,z, guy_bones, guy_bones_map, n_frames, n_markers, rot)
 
 
