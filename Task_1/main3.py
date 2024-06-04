@@ -136,41 +136,25 @@ if __name__ == "__main__":
     #guy_bones = [bone["name"] for bone in data_guy["Body"][0]["Positions"]]
     #rot = (15, 45, 0)
     #create_single_plot(x,y,z, guy_bones, guy_bones_map, n_frames, n_markers, rot)
-    
-    width = 1280
-    height = 720
-    fx = width/(np.tan((fov*np.pi/180)/2))
-    fy = height/(np.tan((fov*np.pi/180)/2))
-    cx = np.float32(width/2)
-    cy = np.float32(height/2)
-    cameraMatrix = np.array([
-        [fx, 0,  cx],
-        [0,  fy, cy],
-        [0,  0,  1]
-    ], dtype = np.float32)
-
-    video_name = "video.avi"
-    cap = cv2.VideoCapture(video_name)
-    # Check if camera opened successfully
-    if (cap.isOpened()== False): 
-        print("Error opening video stream or file")
-        exit()
 
     t = 0
     while(cap.isOpened()):
         ret, frame = cap.read()
-        objectPoints = np.array((x[:,t],y[:,t],z[:,t]), dtype=np.float32)
-        #print(objectPoints.shape)
+        objectPoints = np.array((x[:,t],y[:,t],z[:,t]), dtype=np.float32).T
+
         imagePoints, _ = cv2.projectPoints(objectPoints, rvec_cam, tvec_cam, cameraMatrix, None, aspectRatio=cam_ar)
-        print(imagePoints)
-        exit()
 
-        if ret == False:
-            break
+        imagePoints = imagePoints.squeeze().astype(int)
+        for point in imagePoints:
+            cv2.circle(frame, tuple(point), 5, (0, 0, 255), -1)
 
-        cv2.imshow('Frame',t)
+        cv2.imshow('Frame',frame)
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break        
+
+        print(f"Frame {t}: {imagePoints}")
+        if ret == False:
+            break
 
         t = t+1
 
