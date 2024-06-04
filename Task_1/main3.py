@@ -105,6 +105,39 @@ def get_skeleton_lines(bones, bones_map):
 
     return lines_map
 
+def worldToCamTransform(tvec_cam, rvec_cam, tvec_obj, rvec_obj, points_obj):
+    # Convert rotation vectors to rotation matrices
+    R_cam, _ = cv2.Rodrigues(rvec_cam)
+    R_obj, _ = cv2.Rodrigues(rvec_obj)
+    
+    # Compute the transformation matrix from object to world coordinate system
+    T_obj_to_world = np.eye(4)
+    T_obj_to_world[:3, :3] = R_obj
+    T_obj_to_world[:3, 3] = tvec_obj.flatten()
+    
+    # Compute the transformation matrix from world to camera coordinate system
+    T_world_to_cam = np.eye(4)
+    T_world_to_cam[:3, :3] = R_cam.T  # Inverse of rotation matrix
+    T_world_to_cam[:3, 3] = -R_cam.T @ tvec_cam.flatten()
+    
+    # Combine transformations to get object to camera coordinate system transformation
+    T_obj_to_cam = T_world_to_cam @ T_obj_to_world
+    
+    # Extract the rotation and translation components from the transformation matrix
+    R_obj_to_cam = T_obj_to_cam[:3, :3]
+    tvec_obj_to_cam = T_obj_to_cam[:3, 3]
+    
+    # Transform points from object coordinate system to camera coordinate system
+    points_obj_hom = np.hstack((points_obj, np.ones((points_obj.shape[0], 1))))  # Convert to homogeneous coordinates
+    points_cam_hom = (T_obj_to_cam @ points_obj_hom.T).T  # Apply transformation
+    points_cam = points_cam_hom[:, :3]  # Convert back to Cartesian coordinates
+
+
+    # Convert the rotation matrix back to a rotation vector
+    rvec_obj_to_cam, _ = cv2.Rodrigues(R_obj_to_cam)
+
+    return points_cam, tvec_obj_to_cam, rvec_obj_to_cam
+
 
 if __name__ == "__main__":
     # Opening JSON file
@@ -124,12 +157,11 @@ if __name__ == "__main__":
     cam_ar =  np.float32(data_cam["Camera_AspectRatio"])
 
     # Skeleton vals
-    x = [[pos["X"] for pos in val["Positions"]] for val in data_guy["Body"]]
-    y = [[pos["Y"] for pos in val["Positions"]] for val in data_guy["Body"]]
-    z = [[pos["Z"] for pos in val["Positions"]] for val in data_guy["Body"]]
-    x = np.array(x).T
-    y = np.array(y).T
-    z = np.array(z).T
+    x = np.array([[pos["X"] for pos in val["Positions"]] for val in data_guy["Body"]]).T
+    y = np.array([[pos["Y"] for pos in val["Positions"]] for val in data_guy["Body"]]).T
+    z = np.array([[pos["Z"] for pos in val["Positions"]] for val in data_guy["Body"]]).T
+    tvec_obj = np.array([val["Guy_frame_location"] for val in data_guy["Body"]], dtype=np.float32)
+    rvec_obj = np.array([val["Guy_frame_rotation"] for val in data_guy["Body"]], dtype=np.float32)
 
     #n_markers = x.shape[0]
     #n_frames = x.shape[1]
@@ -137,12 +169,27 @@ if __name__ == "__main__":
     #rot = (15, 45, 0)
     #create_single_plot(x,y,z, guy_bones, guy_bones_map, n_frames, n_markers, rot)
 
+    width = 1280
+    height = 720
+    fx = width/(np.tan((fov*np.pi/180)/2))
+    fy = height/(np.tan((fov*np.pi/180)/2))
+    cx = np.float32(width/2)
+    cy = np.float32(height/2)
+    cameraMatrix = np.array([
+        [fx, 0,  cx],
+        [0,  fy, cy],
+        [0,  0,  1]
+    ], dtype = np.float32)
+
+    cap = cv2.VideoCapture("video.avi")
+
     t = 0
     while(cap.isOpened()):
         ret, frame = cap.read()
         objectPoints = np.array((x[:,t],y[:,t],z[:,t]), dtype=np.float32).T
+        objectPoints, obj_tvec_cam, obj_rvec_cam = worldToCamTransform(tvec_cam, rvec_cam, tvec_obj[t], rvec_obj[t], objectPoints)
 
-        imagePoints, _ = cv2.projectPoints(objectPoints, rvec_cam, tvec_cam, cameraMatrix, None, aspectRatio=cam_ar)
+        imagePoints, _ = cv2.projectPoints(objectPoints, obj_rvec_cam, obj_tvec_cam, cameraMatrix, None, aspectRatio=cam_ar)
 
         imagePoints = imagePoints.squeeze().astype(int)
         for point in imagePoints:
