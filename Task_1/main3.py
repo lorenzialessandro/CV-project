@@ -1,5 +1,5 @@
 import json
-import cv2 as cv 
+import cv2
 import numpy as np
 
 from utility import * # utilities functions: see utility.py
@@ -118,10 +118,10 @@ if __name__ == "__main__":
     src_cam.close()
 
     # Camera vals
-    tvec_cam = np.array(data_cam["Camera_pos"])
-    rvec_cam = np.array(data_cam["Camera_rot"])
+    tvec_cam = np.array(data_cam["Camera_pos"], dtype=np.float32)
+    rvec_cam = np.array(data_cam["Camera_rot"], dtype=np.float32)
     fov = np.float32(data_cam["Camera_FOV"])
-    ar =  np.float32(data_cam["Camera_AspectRatio"])
+    cam_ar =  np.float32(data_cam["Camera_AspectRatio"])
 
     # Skeleton vals
     x = [[pos["X"] for pos in val["Positions"]] for val in data_guy["Body"]]
@@ -131,11 +131,48 @@ if __name__ == "__main__":
     y = np.array(y).T
     z = np.array(z).T
 
-    n_markers = x.shape[0]
-    n_frames = x.shape[1]
-    guy_bones = [bone["name"] for bone in data_guy["Body"][0]["Positions"]]
+    #n_markers = x.shape[0]
+    #n_frames = x.shape[1]
+    #guy_bones = [bone["name"] for bone in data_guy["Body"][0]["Positions"]]
+    #rot = (15, 45, 0)
+    #create_single_plot(x,y,z, guy_bones, guy_bones_map, n_frames, n_markers, rot)
+    
+    width = 1280
+    height = 720
+    fx = width/(np.tan((fov*np.pi/180)/2))
+    fy = height/(np.tan((fov*np.pi/180)/2))
+    cx = np.float32(width/2)
+    cy = np.float32(height/2)
+    cameraMatrix = np.array([
+        [fx, 0,  cx],
+        [0,  fy, cy],
+        [0,  0,  1]
+    ], dtype = np.float32)
 
-    rot = (15, 45, 0)
-    create_single_plot(x,y,z, guy_bones, guy_bones_map, n_frames, n_markers, rot)
+    video_name = "video.avi"
+    cap = cv2.VideoCapture(video_name)
+    # Check if camera opened successfully
+    if (cap.isOpened()== False): 
+        print("Error opening video stream or file")
+        exit()
 
+    t = 0
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        objectPoints = np.array((x[:,t],y[:,t],z[:,t]), dtype=np.float32)
+        #print(objectPoints.shape)
+        imagePoints, _ = cv2.projectPoints(objectPoints, rvec_cam, tvec_cam, cameraMatrix, None, aspectRatio=cam_ar)
+        print(imagePoints)
+        exit()
 
+        if ret == False:
+            break
+
+        cv2.imshow('Frame',t)
+        if cv2.waitKey(25) & 0xFF == ord('q'):
+            break        
+
+        t = t+1
+
+    cap.release()
+    cv2.destroyAllWindows()
