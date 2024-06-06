@@ -1,8 +1,9 @@
 import json
 import cv2
 import numpy as np
-
+from numpy.linalg import inv
 from utility import * # utilities functions: see utility.py
+import time
 
 # Define bones dictionary + list
 guy_bones = []
@@ -89,54 +90,119 @@ guy_bones_map = {
     "RightHandThumb4": []
 }
 
+def rotX (theta) :
+    matrix = np.array([
+        [1,             0,              0, 0],
+        [0, np.cos(theta), -np.sin(theta), 0],
+        [0, np.sin(theta),  np.cos(theta), 0],
+        [0,              0,             0, 1]
+    ], dtype=np.float32)
+    return matrix
+    
+def rotY (theta) :
+    matrix = np.array([
+        [np.cos(theta),  0,  np.sin(theta), 0],
+        [0,              1,              0, 0],
+        [-np.sin(theta), 0,  np.cos(theta), 0],
+        [0,               0,              0,1]
+    ], dtype=np.float32)
+    return matrix
 
-# Function to process a skeleton
-def get_skeleton_lines(bones, bones_map):
+def rotZ (theta) :
+    matrix = np.array([
+        [np.cos(theta), -np.sin(theta), 0, 0],
+        [np.sin(theta),  np.cos(theta), 0, 0],
+        [            0,              0, 1, 0],
+        [            0,              0, 0, 1]
+
+    ], dtype=np.float32)
+    return matrix
+
+def rtvec_to_matrix(rvec, tvec):
+    "Convert rotation vector and translation vector to 4x4 matrix"
+    T = np.eye(4)
+    R, jac = cv2.Rodrigues(rvec)
+    T[:3, :3] = R
+    T[:3, 3] = tvec.squeeze()
+    return T
+
+def matrix_to_rtvec(matrix):
+    "Convert 4x4 matrix to rotation vector and translation vector"
+    rvec, jac = cv2.Rodrigues(matrix[:3, :3])
+    tvec = matrix[:3, 3]
+    return rvec, tvec
+
+
+
+def leftToRightHanded (rvec, tvec):
+    # Left handed (Unreal Enginge) :  (+X: forward, +Y: right, +Z: up) 
+    # Right handed (openCV) : (+X: right, +Y: down, +Z: forward)
+    mat = rtvec_to_matrix(rvec, tvec)
+
+    C = np.array([
+        [0,  1,  0,  0],
+        [0,  0, -1,  0],
+        [1,  0,  0,  0],
+        [0,  0,  0,  1]
+    ], dtype=np.float32)
+
+    # Apply transformation
+    mat = C @ mat @ inv(C)
+
+    #print(f"A rvec - {rvec}")
+    #print(f"A tvec - {tvec}")
+    rvec, tvec = matrix_to_rtvec(mat)
+    #print(f"B rvec - {rvec.T}")
+    #print(f"B tvec - {tvec}")
+    #exit()
+    return rvec, tvec
+
+
+
+#def leftToRightHanded (rvec, tvec):
+#    # Left handed (Unreal Enginge) :  (+X: forward, +Y: right, +Z: up) 
+#    # Right handed (openCV) : (+X: right, +Y: down, +Z: forward)
+#    mat = rtvec_to_matrix(rvec, tvec)
+#    cpy = np.copy(mat)
+#    
+#    # Swap Z & Y Rots the matrix right handed
+#    mat[1,:] = cpy[2,:]
+#    mat[:,1] = cpy[:,2]
+#    mat[2,:] = cpy[1,:]
+#    mat[:,2] = cpy[:,1]
+#    # swap positions independently
+#    #mat[0,3] = cpy[1,3]
+#    #mat[1,3] = -cpy[2,3]
+#    #mat[2,3] = cpy[0,3]
+#
+#    # apply chain of transforms
+#    #mat = rotX(np.deg2rad(180)) @ rotY(np.deg2rad(90)) @ mat
+#
+#    rvec, tvec = matrix_to_rtvec(mat)
+#
+#    return rvec, tvec
+
+def worldToPixel(objectPoints, tvec_obj, tvec_cam, rvec_obj, rvec_cam, cameraMatrix):
     """
-    function to process a skeleton
-
-    :param skeleton: skeleton
-    :return: lines_map
+    :param objectPoints: object's point in world frame coordinates
+    :param tvec_obj: translation vector for object in world frame coordinates
+    :param tvec_cam: translation vector for camera in world frame coordinates
+    :param rvec_obj: rotation vector for object in world frame coordinates
+    :param rvec_cam: rotation vector for camera in world frame coordinates
+    :param cameraMatrix: intrinsic camera parameters
     """
-    # Map bone names to indices
-    bones_index_map = {bone: bones.index(bone) for bone in bones}
-    # Map bone indices to their connections
-    lines_map = {bones_index_map[bone]: [bones_index_map[child] for child in children] for bone, children in bones_map.items()}
 
-    return lines_map
+    T_world_cam = rtvec_to_matrix(rvec_cam, tvec_cam)    # Transformation matrix world -> cam
+    T_world_obj = rtvec_to_matrix(rvec_obj, tvec_obj)    # Transformation matrix world -> obj
+    T_cam_obj = inv(T_world_cam) @ T_world_obj           # Transformation matrix cam -> obj
+    
+    # Get mapping cam -> object
+    rvec, tvec  = matrix_to_rtvec(T_world_cam)
+    # Obtain pixel convertion
+    imagePoints, _ = cv2.projectPoints(objectPoints, rvec, tvec, cameraMatrix, None)
+    imagePoints = imagePoints.squeeze().astype(int)
 
-def worldToCamTransform(tvec_cam, rvec_cam, tvec_obj, rvec_obj, points_obj):
-    # Convert rotation vectors to rotation matrices
-    R_cam, _ = cv2.Rodrigues(rvec_cam)
-    R_obj, _ = cv2.Rodrigues(rvec_obj)
-    
-    # Compute the transformation matrix from object to world coordinate system
-    T_obj_to_world = np.eye(4)
-    T_obj_to_world[:3, :3] = R_obj
-    T_obj_to_world[:3, 3] = tvec_obj.flatten()
-    
-    # Compute the transformation matrix from world to camera coordinate system
-    T_world_to_cam = np.eye(4)
-    T_world_to_cam[:3, :3] = R_cam.T  # Inverse of rotation matrix
-    T_world_to_cam[:3, 3] = -R_cam.T @ tvec_cam.flatten()
-    
-    # Combine transformations to get object to camera coordinate system transformation
-    T_obj_to_cam = T_world_to_cam @ T_obj_to_world
-    
-    # Extract the rotation and translation components from the transformation matrix
-    R_obj_to_cam = T_obj_to_cam[:3, :3]
-    tvec_obj_to_cam = T_obj_to_cam[:3, 3]
-    
-    # Transform points from object coordinate system to camera coordinate system
-    points_obj_hom = np.hstack((points_obj, np.ones((points_obj.shape[0], 1))))  # Convert to homogeneous coordinates
-    points_cam_hom = (T_obj_to_cam @ points_obj_hom.T).T  # Apply transformation
-    points_cam = points_cam_hom[:, :3]  # Convert back to Cartesian coordinates
-
-
-    # Convert the rotation matrix back to a rotation vector
-    rvec_obj_to_cam, _ = cv2.Rodrigues(R_obj_to_cam)
-
-    return points_cam, tvec_obj_to_cam, rvec_obj_to_cam
+    return imagePoints
 
 
 if __name__ == "__main__":
@@ -150,60 +216,95 @@ if __name__ == "__main__":
     src_guy.close()
     src_cam.close()
 
-    # Camera vals
+    #
+    ## Data gathering
+    #
+    ## !!! IMPORTANT !!! > axis need to be swapped as Unreal is Left-Handed, while OpenCV is Right-Handed ?check well?
+    # 
+
+    # Camera tranform
+    rvec_cam = np.deg2rad(np.array(data_cam["Camera_rot"], dtype=np.float32))
     tvec_cam = np.array(data_cam["Camera_pos"], dtype=np.float32)
-    rvec_cam = np.array(data_cam["Camera_rot"], dtype=np.float32)
-    fov = np.float32(data_cam["Camera_FOV"])
+    rvec_cam, tvec_cam = leftToRightHanded(rvec_cam, tvec_cam)
+    # Camera intrinsics
+    fov = np.deg2rad(np.float32(data_cam["Camera_FOV"]))
     cam_ar =  np.float32(data_cam["Camera_AspectRatio"])
+    
+    # Skeleton poses
+    points = np.array([[[pos["X"], pos["Y"], pos["Z"]] for pos in val["Positions"]] for val in data_guy["Body"]], dtype=np.float32).T
+    for i in range(points.shape[1]) :
+        for j in range(points.shape[2]) : 
+            _ , points[:,i,j] = leftToRightHanded(np.zeros(3), points[:,i,j])
+    x = points[0,:,:]
+    y = points[1,:,:]
+    z = points[2,:,:]
 
-    # Skeleton vals
-    x = np.array([[pos["X"] for pos in val["Positions"]] for val in data_guy["Body"]]).T
-    y = np.array([[pos["Y"] for pos in val["Positions"]] for val in data_guy["Body"]]).T
-    z = np.array([[pos["Z"] for pos in val["Positions"]] for val in data_guy["Body"]]).T
-    tvec_obj = np.array([val["Guy_frame_location"] for val in data_guy["Body"]], dtype=np.float32)
-    rvec_obj = np.array([val["Guy_frame_rotation"] for val in data_guy["Body"]], dtype=np.float32)
+    # skeleton rots
+    rvec_obj = np.deg2rad(np.array(data_guy["Body"][0]["Guy_frame_rotation"], dtype=np.float32))
+    tvec_obj = np.array(data_guy["Body"][0]["Guy_frame_location"], dtype=np.float32)
+    rvec_obj, tvec_obj = leftToRightHanded(rvec_obj, tvec_obj)
+    
+    #
+    ## Animation Plotting
+    #
 
-    #n_markers = x.shape[0]
-    #n_frames = x.shape[1]
-    #guy_bones = [bone["name"] for bone in data_guy["Body"][0]["Positions"]]
-    #rot = (15, 45, 0)
+    n_markers = x.shape[0]
+    n_frames = x.shape[1]
+    guy_bones = [bone["name"] for bone in data_guy["Body"][0]["Positions"]]
+    bones_index_map = {bone: guy_bones.index(bone) for bone in guy_bones}
+    lines_map = {bones_index_map[bone]: [bones_index_map[child] for child in children] for bone, children in guy_bones_map.items()}
+    #rot = (0, 0, 0)
     #create_single_plot(x,y,z, guy_bones, guy_bones_map, n_frames, n_markers, rot)
+    #exit()
 
-    width = 1280
-    height = 720
-    fx = width/(np.tan((fov*np.pi/180)/2))
-    fy = height/(np.tan((fov*np.pi/180)/2))
+    #
+    ## Video Plotting
+    #
+
+    cap = cv2.VideoCapture("video.avi")
+    #out = cv2.VideoWriter('guyWithSkel.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 60, (width,height))
+    if not cap.isOpened():
+        print("Error: Could not open video.")
+        exit()
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    
+    fx = width/(2*np.tan(fov/2))
+    fy = height/(2*np.tan(fov/2))
     cx = np.float32(width/2)
     cy = np.float32(height/2)
+
     cameraMatrix = np.array([
         [fx, 0,  cx],
         [0,  fy, cy],
         [0,  0,  1]
     ], dtype = np.float32)
 
-    cap = cv2.VideoCapture("video.avi")
+    for t in range(0, n_frames) :
 
-    t = 0
-    while(cap.isOpened()):
-        ret, frame = cap.read()
-        objectPoints = np.array((x[:,t],y[:,t],z[:,t]), dtype=np.float32).T
-        objectPoints, obj_tvec_cam, obj_rvec_cam = worldToCamTransform(tvec_cam, rvec_cam, tvec_obj[t], rvec_obj[t], objectPoints)
+        res, frame = cap.read()
+        if res == False:
+            break
 
-        imagePoints, _ = cv2.projectPoints(objectPoints, obj_rvec_cam, obj_tvec_cam, cameraMatrix, None, aspectRatio=cam_ar)
+        objectPoints = np.array((x[:,t], y[:,t], z[:,t]), dtype=np.float32).T
+        imagePoints = worldToPixel(objectPoints, tvec_obj, tvec_cam, rvec_obj, rvec_cam, cameraMatrix)
 
-        imagePoints = imagePoints.squeeze().astype(int)
-        for point in imagePoints:
-            cv2.circle(frame, tuple(point), 5, (0, 0, 255), -1)
+        for key, point in enumerate(imagePoints):
+            u, v = point
+            cv2.circle(frame, (u,v), 5, (0, 0, 255), 1)
+            
+            for connection in lines_map[key] :
+                u_2, v_2 = imagePoints[connection]
+                cv2.line(frame, (u,v), (u_2, v_2), (255, 0, 0), 1)
 
-        cv2.imshow('Frame',frame)
+        #out.write(frame)
+        cv2.imshow('Frame', frame)
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break        
 
-        print(f"Frame {t}: {imagePoints}")
-        if ret == False:
-            break
+        print(f"Frame {t} {imagePoints}")
+        #print(f"pos: {objectPoints[0,:]}")
 
-        t = t+1
-
+    #out.release()
     cap.release()
     cv2.destroyAllWindows()
