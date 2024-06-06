@@ -140,49 +140,21 @@ def leftToRightHanded (rvec, tvec):
     mat = rtvec_to_matrix(rvec, tvec)
 
     C = np.array([
-        [0,  1,  0,  0],
-        [0,  0, -1,  0],
-        [1,  0,  0,  0],
-        [0,  0,  0,  1]
+        [0,  1,   0,  0],
+        [0,  0,  -1,  0],
+        [1,  0,   0,  0],
+        [0,  0,   0,  1]
     ], dtype=np.float32)
-
+    
     # Apply transformation
     mat = C @ mat @ inv(C)
 
-    #print(f"A rvec - {rvec}")
-    #print(f"A tvec - {tvec}")
     rvec, tvec = matrix_to_rtvec(mat)
-    #print(f"B rvec - {rvec.T}")
-    #print(f"B tvec - {tvec}")
-    #exit()
+
     return rvec, tvec
 
 
-
-#def leftToRightHanded (rvec, tvec):
-#    # Left handed (Unreal Enginge) :  (+X: forward, +Y: right, +Z: up) 
-#    # Right handed (openCV) : (+X: right, +Y: down, +Z: forward)
-#    mat = rtvec_to_matrix(rvec, tvec)
-#    cpy = np.copy(mat)
-#    
-#    # Swap Z & Y Rots the matrix right handed
-#    mat[1,:] = cpy[2,:]
-#    mat[:,1] = cpy[:,2]
-#    mat[2,:] = cpy[1,:]
-#    mat[:,2] = cpy[:,1]
-#    # swap positions independently
-#    #mat[0,3] = cpy[1,3]
-#    #mat[1,3] = -cpy[2,3]
-#    #mat[2,3] = cpy[0,3]
-#
-#    # apply chain of transforms
-#    #mat = rotX(np.deg2rad(180)) @ rotY(np.deg2rad(90)) @ mat
-#
-#    rvec, tvec = matrix_to_rtvec(mat)
-#
-#    return rvec, tvec
-
-def worldToPixel(objectPoints, tvec_obj, tvec_cam, rvec_obj, rvec_cam, cameraMatrix):
+def worldToPixel(objectPoints, tvec_obj, tvec_cam, rvec_obj, rvec_cam, cameraMatrix, cameraDistortion, aspectRatio):
     """
     :param objectPoints: object's point in world frame coordinates
     :param tvec_obj: translation vector for object in world frame coordinates
@@ -191,15 +163,13 @@ def worldToPixel(objectPoints, tvec_obj, tvec_cam, rvec_obj, rvec_cam, cameraMat
     :param rvec_cam: rotation vector for camera in world frame coordinates
     :param cameraMatrix: intrinsic camera parameters
     """
-
     T_world_cam = rtvec_to_matrix(rvec_cam, tvec_cam)    # Transformation matrix world -> cam
-    T_world_obj = rtvec_to_matrix(rvec_obj, tvec_obj)    # Transformation matrix world -> obj
-    T_cam_obj = inv(T_world_cam) @ T_world_obj           # Transformation matrix cam -> obj
     
     # Get mapping cam -> object
-    rvec, tvec  = matrix_to_rtvec(T_world_cam)
+    rvec, tvec  = matrix_to_rtvec(inv(T_world_cam))
+
     # Obtain pixel convertion
-    imagePoints, _ = cv2.projectPoints(objectPoints, rvec, tvec, cameraMatrix, None)
+    imagePoints, _ = cv2.projectPoints(objectPoints, rvec, tvec, cameraMatrix, cameraDistortion, aspectRatio=aspectRatio)
     imagePoints = imagePoints.squeeze().astype(int)
 
     return imagePoints
@@ -228,8 +198,9 @@ if __name__ == "__main__":
     rvec_cam, tvec_cam = leftToRightHanded(rvec_cam, tvec_cam)
     # Camera intrinsics
     fov = np.deg2rad(np.float32(data_cam["Camera_FOV"]))
-    cam_ar =  np.float32(data_cam["Camera_AspectRatio"])
-    
+    aspectRatio = np.float32(data_cam["Camera_AspectRatio"])
+    cameraDistortion = np.array([0, 0, 0, 0, 0], dtype=np.float32)
+
     # Skeleton poses
     points = np.array([[[pos["X"], pos["Y"], pos["Z"]] for pos in val["Positions"]] for val in data_guy["Body"]], dtype=np.float32).T
     for i in range(points.shape[1]) :
@@ -243,7 +214,7 @@ if __name__ == "__main__":
     rvec_obj = np.deg2rad(np.array(data_guy["Body"][0]["Guy_frame_rotation"], dtype=np.float32))
     tvec_obj = np.array(data_guy["Body"][0]["Guy_frame_location"], dtype=np.float32)
     rvec_obj, tvec_obj = leftToRightHanded(rvec_obj, tvec_obj)
-    
+
     #
     ## Animation Plotting
     #
@@ -268,7 +239,7 @@ if __name__ == "__main__":
         exit()
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    
+
     fx = width/(2*np.tan(fov/2))
     fy = height/(2*np.tan(fov/2))
     cx = np.float32(width/2)
@@ -287,7 +258,7 @@ if __name__ == "__main__":
             break
 
         objectPoints = np.array((x[:,t], y[:,t], z[:,t]), dtype=np.float32).T
-        imagePoints = worldToPixel(objectPoints, tvec_obj, tvec_cam, rvec_obj, rvec_cam, cameraMatrix)
+        imagePoints = worldToPixel(objectPoints, tvec_obj, tvec_cam, rvec_obj, rvec_cam, cameraMatrix, cameraDistortion, aspectRatio)
 
         for key, point in enumerate(imagePoints):
             u, v = point
@@ -303,7 +274,6 @@ if __name__ == "__main__":
             break        
 
         print(f"Frame {t} {imagePoints}")
-        #print(f"pos: {objectPoints[0,:]}")
 
     #out.release()
     cap.release()
