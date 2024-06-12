@@ -32,7 +32,7 @@ def get_camera_params (CHECKERBOARD = (9, 6), display=False):
     for filename in images: 
         image = cv2.imread(filename) 
         grayColor = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) 
-
+            
         # Find the chess board corners 
         # If desired number of corners are 
         # found in the image then ret = true 
@@ -56,11 +56,13 @@ def get_camera_params (CHECKERBOARD = (9, 6), display=False):
             twodpoints.append(corners2) 
 
             # Draw and display the corners 
-            image = cv2.drawChessboardCorners(image,CHECKERBOARD, corners2, ret) 
+            image = cv2.drawChessboardCorners(image,CHECKERBOARD, corners2, ret)
+            if display :
+                print(filename)
+                cv2.imshow('img', image) 
+                cv2.waitKey(50) 
 
-        if display :
-            cv2.imshow('img', image) 
-            cv2.waitKey(50) 
+
     if display :
         cv2.destroyAllWindows() 
 

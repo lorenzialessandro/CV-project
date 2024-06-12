@@ -243,7 +243,7 @@ if __name__ == "__main__":
     fx = (width)/(2*np.tan(fov/2))
     fy = (height)/(2*np.tan(fov/2))
     cx = np.float32((width)/2)
-    cy = np.float32((height)/4)
+    cy = np.float32((height)/2)
 
     cameraMatrix = np.array([
         [fx, 0,  cx],
