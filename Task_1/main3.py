@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from numpy.linalg import inv
 from utility import * # utilities functions: see utility.py
+from cameraCalibSquares import *
 import time
 
 # Define bones dictionary + list
@@ -147,7 +148,7 @@ def leftToRightHanded (rvec, tvec):
     ], dtype=np.float32)
     
     # Apply transformation
-    mat = C @ mat @ inv(C)
+    mat = (C) @ mat @ inv(C)
 
     rvec, tvec = matrix_to_rtvec(mat)
 
@@ -164,7 +165,7 @@ def worldToPixel(objectPoints, tvec_obj, tvec_cam, rvec_obj, rvec_cam, cameraMat
     :param cameraMatrix: intrinsic camera parameters
     """
     T_world_cam = rtvec_to_matrix(rvec_cam, tvec_cam)    # Transformation matrix world -> cam
-    
+
     # Get mapping cam -> object
     rvec, tvec  = matrix_to_rtvec(inv(T_world_cam))
 
@@ -173,7 +174,6 @@ def worldToPixel(objectPoints, tvec_obj, tvec_cam, rvec_obj, rvec_cam, cameraMat
     imagePoints = imagePoints.squeeze().astype(int)
 
     return imagePoints
-
 
 if __name__ == "__main__":
     # Opening JSON file
@@ -189,7 +189,7 @@ if __name__ == "__main__":
     #
     ## Data gathering
     #
-    ## !!! IMPORTANT !!! > axis need to be swapped as Unreal is Left-Handed, while OpenCV is Right-Handed ?check well?
+    ## !!! IMPORTANT !!! > axis need to be swapped as Unreal is Left-Handed, while OpenCV is Right-Handed
     # 
 
     # Camera tranform
@@ -239,17 +239,20 @@ if __name__ == "__main__":
         exit()
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-    fx = width/(2*np.tan(fov/2))
-    fy = height/(2*np.tan(fov/2))
-    cx = np.float32(width/2)
-    cy = np.float32(height/2)
+    
+    fx = (width)/(2*np.tan(fov/2))
+    fy = (height)/(2*np.tan(fov/2))
+    cx = np.float32((width)/2)
+    cy = np.float32((height)/4)
 
     cameraMatrix = np.array([
         [fx, 0,  cx],
         [0,  fy, cy],
         [0,  0,  1]
     ], dtype = np.float32)
+
+    print("Calibrating camera...")
+    cameraMatrix, cameraDistortion, _, _ = get_camera_params(display=True)
 
     for t in range(0, n_frames) :
 
@@ -259,10 +262,11 @@ if __name__ == "__main__":
 
         objectPoints = np.array((x[:,t], y[:,t], z[:,t]), dtype=np.float32).T
         imagePoints = worldToPixel(objectPoints, tvec_obj, tvec_cam, rvec_obj, rvec_cam, cameraMatrix, cameraDistortion, aspectRatio)
-
+        #imagePoints = imagePoints - np.array((0, 200))
+        
         for key, point in enumerate(imagePoints):
             u, v = point
-            cv2.circle(frame, (u,v), 5, (0, 0, 255), 1)
+            cv2.circle(frame, (u,v), 5, (0, 0, 255), -1)
             
             for connection in lines_map[key] :
                 u_2, v_2 = imagePoints[connection]
@@ -273,7 +277,7 @@ if __name__ == "__main__":
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break        
 
-        print(f"Frame {t} {imagePoints}")
+        #print(f"Frame {t} {imagePoints}")
 
     #out.release()
     cap.release()
