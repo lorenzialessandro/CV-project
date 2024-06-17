@@ -9,12 +9,10 @@ def get_camera_params (CHECKERBOARD = (9, 6), display=False):
     # stop the iteration when specified 
     # accuracy, epsilon, is reached or 
     # specified number of iterations are completed. 
-    criteria = (cv2.TERM_CRITERIA_EPS +
-                cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001) 
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001) 
 
     # Vector for 3D points 
     threedpoints = [] 
-
     # Vector for 2D points 
     twodpoints = [] 
 
@@ -48,11 +46,8 @@ def get_camera_params (CHECKERBOARD = (9, 6), display=False):
         if ret == True: 
             threedpoints.append(objectp3d) 
 
-            # Refining pixel coordinates 
-            # for given 2d points. 
-            corners2 = cv2.cornerSubPix( 
-                grayColor, corners, (11, 11), (-1, -1), criteria) 
-
+            # Refining pixel coordinates for given 2d points. 
+            corners2 = cv2.cornerSubPix(grayColor, corners, (11, 11), (-1, -1), criteria) 
             twodpoints.append(corners2) 
 
             # Draw and display the corners 
@@ -61,8 +56,6 @@ def get_camera_params (CHECKERBOARD = (9, 6), display=False):
                 print(filename)
                 cv2.imshow('img', image) 
                 cv2.waitKey(50) 
-
-
     if display :
         cv2.destroyAllWindows() 
 
@@ -81,13 +74,16 @@ def get_camera_params (CHECKERBOARD = (9, 6), display=False):
 
     # Displaying required output
     if display :
-        print(" Camera matrix:") 
-        print(cameraMatrix) 
-        print("\n Distortion coefficient:") 
-        print(cameraDistortion) 
-        print("\n Rotation Vectors:") 
-        print(r_vecs) 
-        print("\n Translation Vectors:") 
-        print(t_vecs)
+        print(f"\nCamera matrix:\n{cameraMatrix}") 
+        print(f"\nDistortion coefficient:\n{cameraDistortion}") 
+        print(f"\nRotation Vectors:\n{r_vecs}") 
+        print(f"\nTranslation Vectors:\n{t_vecs}") 
+
+        mean_error = 0
+        for i in range(len(threedpoints)):
+            imgpoints2, _ = cv2.projectPoints(threedpoints[i], r_vecs[i], t_vecs[i], cameraMatrix, cameraDistortion)
+            error = cv2.norm(twodpoints[i], imgpoints2, cv2.NORM_L2)/len(imgpoints2)
+            mean_error += error
+        print( "\nTotal projection error: {}".format(mean_error/len(threedpoints)) )
 
     return cameraMatrix, cameraDistortion, r_vecs, t_vecs

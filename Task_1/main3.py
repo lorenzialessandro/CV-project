@@ -155,7 +155,7 @@ def leftToRightHanded (rvec, tvec):
     return rvec, tvec
 
 
-def worldToPixel(objectPoints, tvec_obj, tvec_cam, rvec_obj, rvec_cam, cameraMatrix, cameraDistortion, aspectRatio):
+def worldToPixel(objectPoints, rvec_obj, tvec_obj, rvec_cam, tvec_cam, cameraMatrix, cameraDistortion):
     """
     :param objectPoints: object's point in world frame coordinates
     :param tvec_obj: translation vector for object in world frame coordinates
@@ -165,19 +165,25 @@ def worldToPixel(objectPoints, tvec_obj, tvec_cam, rvec_obj, rvec_cam, cameraMat
     :param cameraMatrix: intrinsic camera parameters
     """
     T_world_cam = rtvec_to_matrix(rvec_cam, tvec_cam)    # Transformation matrix world -> cam
+    T_world_obj = rtvec_to_matrix(rvec_obj, tvec_obj)    # Transformation matrix world -> obj
+    T_cam_obj = inv(T_world_cam) @ T_world_obj           # Transformation matrix cam -> obj
 
     # Get mapping cam -> object
     rvec, tvec  = matrix_to_rtvec(inv(T_world_cam))
 
+    #objectPoints = np.hstack((objectPoints, np.ones((objectPoints.shape[0], 1))))
+    #objectPoints = (inv(T_world_obj) @ objectPoints.T).T
+    #objectPoints = objectPoints[:,:3]
+
     # Obtain pixel convertion
-    imagePoints, _ = cv2.projectPoints(objectPoints, rvec, tvec, cameraMatrix, cameraDistortion, aspectRatio=aspectRatio)
+    imagePoints, _ = cv2.projectPoints(objectPoints, rvec, tvec, cameraMatrix, cameraDistortion)
     imagePoints = imagePoints.squeeze().astype(int)
 
     return imagePoints
 
 if __name__ == "__main__":
     # Opening JSON file
-    src_guy = open('guy.json')
+    src_guy = open('skeleton.json')
     src_cam = open('camera.json')
     # Returns JSON object as a dictionary
     data_guy = json.load(src_guy)
@@ -202,6 +208,10 @@ if __name__ == "__main__":
     cameraDistortion = np.array([0, 0, 0, 0, 0], dtype=np.float32)
 
     # Skeleton poses
+    #UVs = np.array([[[pos["u"], pos["v"]] for pos in val["Positions"]] for val in data_guy["Body"]], dtype=np.int32).T
+    #u = UVs[0,:,:] - np.int32(93)
+    #v = UVs[1,:,:] - np.int32(153)
+    
     points = np.array([[[pos["X"], pos["Y"], pos["Z"]] for pos in val["Positions"]] for val in data_guy["Body"]], dtype=np.float32).T
     for i in range(points.shape[1]) :
         for j in range(points.shape[2]) : 
@@ -240,19 +250,20 @@ if __name__ == "__main__":
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     
-    fx = (width)/(2*np.tan(fov/2))
-    fy = (height)/(2*np.tan(fov/2))
     cx = np.float32((width)/2)
     cy = np.float32((height)/2)
-
+    fx = width/(2*np.tan(fov/2))
+    fy = fx * height/width
     cameraMatrix = np.array([
         [fx, 0,  cx],
         [0,  fy, cy],
         [0,  0,  1]
     ], dtype = np.float32)
+    #print(cameraMatrix)
+    #exit()
 
-    print("Calibrating camera...")
-    cameraMatrix, cameraDistortion, _, _ = get_camera_params(display=True)
+    #print("Calibrating camera...")
+    #cameraMatrix, cameraDistortion, _, _ = get_camera_params(display=True)
 
     for t in range(0, n_frames) :
 
@@ -261,9 +272,14 @@ if __name__ == "__main__":
             break
 
         objectPoints = np.array((x[:,t], y[:,t], z[:,t]), dtype=np.float32).T
-        imagePoints = worldToPixel(objectPoints, tvec_obj, tvec_cam, rvec_obj, rvec_cam, cameraMatrix, cameraDistortion, aspectRatio)
-        #imagePoints = imagePoints - np.array((0, 200))
+        imagePoints = worldToPixel(objectPoints, rvec_obj, tvec_obj, rvec_cam, tvec_cam, cameraMatrix, cameraDistortion)
+        #imagePoints -= np.int32((0, 360))
         
+        #for idx in range(n_markers):
+        #    #cv2.circle(frame, (u[idx,t],v[idx,t]), 5, (0, 0, 255), -1)
+        #    for connection in lines_map[idx] :
+        #        cv2.line(frame, (u[idx,t],v[idx,t]), (u[connection,t], v[connection,t]), (255, 0, 0), 1)
+
         for key, point in enumerate(imagePoints):
             u, v = point
             cv2.circle(frame, (u,v), 5, (0, 0, 255), -1)
