@@ -199,8 +199,8 @@ if __name__ == "__main__":
     # 
 
     # Camera tranform
-    rvec_cam = np.deg2rad(np.array(data_cam["Camera_rot"], dtype=np.float32))
-    tvec_cam = np.array(data_cam["Camera_pos"], dtype=np.float32)
+    rvec_cam = np.deg2rad(np.array([data_cam["Camera_rot"]["roll"], data_cam["Camera_rot"]["pitch"], data_cam["Camera_rot"]["yaw"]], dtype=np.float32))
+    tvec_cam = np.array([data_cam["Camera_pos"]["x"], data_cam["Camera_pos"]["y"], data_cam["Camera_pos"]["z"]], dtype=np.float32)
     rvec_cam, tvec_cam = leftToRightHanded(rvec_cam, tvec_cam)
     # Camera intrinsics
     fov = np.deg2rad(np.float32(data_cam["Camera_FOV"]))
@@ -212,7 +212,7 @@ if __name__ == "__main__":
     #u = UVs[0,:,:] - np.int32(93)
     #v = UVs[1,:,:] - np.int32(153)
     
-    points = np.array([[[pos["X"], pos["Y"], pos["Z"]] for pos in val["Positions"]] for val in data_guy["Body"]], dtype=np.float32).T
+    points = np.array([[[pos["loc"]["x"], pos["loc"]["y"], pos["loc"]["z"]] for pos in val["Positions"]] for val in data_guy["Body"]], dtype=np.float32).T
     for i in range(points.shape[1]) :
         for j in range(points.shape[2]) : 
             _ , points[:,i,j] = leftToRightHanded(np.zeros(3), points[:,i,j])
@@ -221,8 +221,8 @@ if __name__ == "__main__":
     z = points[2,:,:]
 
     # skeleton rots
-    rvec_obj = np.deg2rad(np.array(data_guy["Body"][0]["Guy_frame_rotation"], dtype=np.float32))
-    tvec_obj = np.array(data_guy["Body"][0]["Guy_frame_location"], dtype=np.float32)
+    rvec_obj = np.deg2rad(np.array([data_guy["Body"][0]["Guy_frame_rotation"]["roll"], data_guy["Body"][0]["Guy_frame_rotation"]["pitch"], data_guy["Body"][0]["Guy_frame_rotation"]["yaw"]], dtype=np.float32))
+    tvec_obj = np.array([data_guy["Body"][0]["Guy_frame_location"]["x"], data_guy["Body"][0]["Guy_frame_location"]["y"], data_guy["Body"][0]["Guy_frame_location"]["z"]], dtype=np.float32)
     rvec_obj, tvec_obj = leftToRightHanded(rvec_obj, tvec_obj)
 
     #
