@@ -13,6 +13,12 @@ cd CV-project
 
 ## Task 3
 
+Inside an <b>Unreal Engine 5 (UE5)</b> virtual environment we want to achieve 3D to 2D projection of joint positions onto the camera plane.
+We properly modelled the scene inserting 2 core blueprints, one containing our main actor and the other containing the camera
+<p align="center">
+  <img src="media/scene.png" width="75%">
+</p>
+Using the blueprint engine together with [json Blueprint Utilities](https://www.unrealdirective.com/tips/json-blueprint-utilities-plugin) plugin we implemented a script to extract data in \textbf{Json} format (available for visualization [**Here**](https://blueprintue.com/blueprint/_qn_vgvc/) :
 
 
 ## Task optional
@@ -40,7 +46,7 @@ python3 main_extra.py <OPT>
 \<OPT\> : mandatory parameter, chose among : { RENDER | SKINNING }
 * RENDER : imports the [animation_small.bhv](resources/360fps/animation_small.bvh) into a Blender scene, adding : checkerboard floor, sun, meshes linked to bones and assigned to a default materials + a camera ready to render the scene
 * SKINNING : imports the [animation.bhv](resources/360fps/animation.bvh) as animation and retargets it to a [mesh](resources/ue5/TheBoss.fbx)
-
+<br>
 <p align="center">
   <img src="media/bvhFrame.png" width="75%">
 </p>
