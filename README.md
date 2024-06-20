@@ -17,7 +17,7 @@ cd CV-project
 
 ## Task optional
 Instead of evaluating results on Matplotlib or open3d it would be much better to forward data to a more suitable environment such as Blender.
-We adapted [**deep-motion-editing**](https://github.com/DeepMotionEditing/deep-motion-editing) framework to our data.
+We adapted [**deep-motion-editing**](https://github.com/DeepMotionEditing/deep-motion-editing | 300) framework to our data.
 Please use as reference requirements specified in the deep-motion-editing repository.
 <br><br>
 
