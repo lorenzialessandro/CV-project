@@ -1,10 +1,9 @@
-# Import required modules 
 import cv2 
 import numpy as np 
 import os 
 import glob 
 
-def get_camera_params (CHECKERBOARD = (9, 6), display=False):
+def get_camera_params (CHECKERBOARD=(9, 6), display=False):
     # Define the dimensions of checkerboard 
     # stop the iteration when specified 
     # accuracy, epsilon, is reached or 
@@ -24,10 +23,11 @@ def get_camera_params (CHECKERBOARD = (9, 6), display=False):
     # Extracting path of individual image stored 
     # in a given directory. Since no path is 
     # specified, it will take current directory 
-    # jpg files alone 
-    images = glob.glob('checkboard/*.png') 
-
-    for filename in images: 
+    # png files alone 
+    images = glob.glob('utils/checkboard/*.png') 
+    print(images)
+    
+    for filename in images:
         image = cv2.imread(filename) 
         grayColor = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) 
             
@@ -51,7 +51,7 @@ def get_camera_params (CHECKERBOARD = (9, 6), display=False):
             twodpoints.append(corners2) 
 
             # Draw and display the corners 
-            image = cv2.drawChessboardCorners(image,CHECKERBOARD, corners2, ret)
+            image = cv2.drawChessboardCorners(image, CHECKERBOARD, corners2, ret)
             if display :
                 print(filename)
                 cv2.imshow('img', image) 
@@ -60,7 +60,6 @@ def get_camera_params (CHECKERBOARD = (9, 6), display=False):
         cv2.destroyAllWindows() 
 
     h, w = image.shape[:2] 
-
 
     # Perform camera calibration by 
     # passing the value of above found out 3D points (threedpoints) 
