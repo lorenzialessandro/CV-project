@@ -22,10 +22,16 @@ Please use as reference requirements specified in the deep-motion-editing reposi
 <br><br>
 
 before testing, set an alias to the blender executable as :
+(For Linux users)
+```
+gedit ~/.bashrc
+```
+and write as last line of file
 ```
 export PATH=/path/to/blender/folder/:$PATH
 ```
-(For Linux users)
+Then save and close. From now on running "blender" on the terminal directly launch the blender environment
+
 
 <br>
 
