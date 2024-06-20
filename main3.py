@@ -222,14 +222,15 @@ if __name__ == "__main__":
     ## Video Plotting
     #
     cap = cv2.VideoCapture("media/Level.avi")
-    #out = cv2.VideoWriter('guyWithSkel.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 60, (width,height))
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    #out = cv2.VideoWriter('media/LevelProjection.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 60, (width,height))
     if not cap.isOpened():
         print("Error: Could not open video.")
         exit()
 
     # Defining camera intrinsics
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     cx = np.float32((width)/2)
     cy = np.float32((height)/2)
     fx = fy = width/(2*np.tan(fov/2))
