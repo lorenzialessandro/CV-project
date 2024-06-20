@@ -36,6 +36,8 @@ Then save and close. From now on running "blender" on the terminal directly laun
 <br>
 
 \<OPT\> : mandatory parameter, chose among : { RENDER | SKINNING }
+* RENDER : imports the [animation_small.bhv](resources/360fps/animation_small.bvh) into a Blender scene, adding : checkerboard floor, sun, meshes linked to bones and assigned to a default materia + a camera 
+* SKINNING : imports the [animation.bhv](resources/360fps/animation.bvh) as animation and retargets it to a [mesh](resources/ue5/TheBoss.fbx)
 ```
 python3 main_extra.py <OPT>
 ```
