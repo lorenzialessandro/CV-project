@@ -20,8 +20,16 @@ We properly modelled the scene inserting 2 core blueprints, one containing our m
   <img src="media/scene.png" width="75%">
 </p>
 
-Using the blueprint engine together with [json Blueprint Utilities](https://www.unrealdirective.com/tips/json-blueprint-utilities-plugin) plugin we implemented a script to extract data in \textbf{Json} format (available for visualization [**Here**](https://blueprintue.com/blueprint/_qn_vgvc/) :
-
+Using the blueprint engine together with [json Blueprint Utilities](https://www.unrealdirective.com/tips/json-blueprint-utilities-plugin) plugin we implemented a script to extract data in <b>Json</b> format (available for visualization [**Here**](https://blueprintue.com/blueprint/_qn_vgvc/)). Using openCV and the extracted data we're able to project skeleton joints on the camera frame:
+<br>
+```
+python3 main_3.py
+```
+<br>
+<p align="center">
+  <img src="media/skeletonProjection.png" width="75%">
+</p>
+<br>
 
 ## Task optional
 Instead of evaluating results on Matplotlib or open3d it would be much better to forward data to a more suitable environment such as Blender.
