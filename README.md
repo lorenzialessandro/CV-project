@@ -19,7 +19,7 @@ cd CV-project
 Instead of evaluating results on Matplotlib or open3d it would be much better to forward data to a more suitable environment such as Blender.
 We adapted [**deep-motion-editing**](https://github.com/DeepMotionEditing/deep-motion-editing) framework to our data:
 
-<OPT> : mandatory parameter, chose among : { RENDER | SKINNING }
+\<OPT\> : mandatory parameter, chose among : { RENDER | SKINNING }
 ```
 python3 main_extra.py <OPT>
 ```
