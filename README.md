@@ -32,15 +32,15 @@ export PATH=/path/to/blender/folder/:$PATH
 ```
 Then save and close. From now on running "blender" on the terminal directly launch the blender environment
 
-
-<br>
-
-\<OPT\> : mandatory parameter, chose among : { RENDER | SKINNING }
-* RENDER : imports the [animation_small.bhv](resources/360fps/animation_small.bvh) into a Blender scene, adding : checkerboard floor, sun, meshes linked to bones and assigned to a default materials + a camera ready to render the scene
-* SKINNING : imports the [animation.bhv](resources/360fps/animation.bvh) as animation and retargets it to a [mesh](resources/ue5/TheBoss.fbx)
+<br><hr>
+To test run:
 ```
 python3 main_extra.py <OPT>
 ```
+\<OPT\> : mandatory parameter, chose among : { RENDER | SKINNING }
+* RENDER : imports the [animation_small.bhv](resources/360fps/animation_small.bvh) into a Blender scene, adding : checkerboard floor, sun, meshes linked to bones and assigned to a default materials + a camera ready to render the scene
+* SKINNING : imports the [animation.bhv](resources/360fps/animation.bvh) as animation and retargets it to a [mesh](resources/ue5/TheBoss.fbx)
+
 <p align="center">
   <img src="media/bvhFrame.png" width="75%">
 </p>
