@@ -39,4 +39,4 @@ Then save and close. From now on running "blender" on the terminal directly laun
 ```
 python3 main_extra.py <OPT>
 ```
-<img src="media/bvhFrame.png" width="400" height="790">
+<img src="media/bvhFrame.png" width="75%">
