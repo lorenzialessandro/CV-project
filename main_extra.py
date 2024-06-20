@@ -15,9 +15,9 @@ if __name__ == '__main__':
     if opt is not None :
         if opt == "RENDER":
             os.chdir("lib/deep-motion-editing/blender_rendering/")
-            os.system("blender -P render.py -- --bvh_path ../../../resources/360fps/animation_small.bvh")
+            os.system("blender -P render.py -- --bvh_path='../../../resources/360fps/animation_small.bvh'")
         elif opt == "SKINNING":
-            os.system("blender -P lib/deep-motion-editing/blender_rendering/skinning.py -- --bvh_file resources/360fps/animation.bvh --fbx_file resources/ue5/TheBoss.fbx")
+            os.system("blender -P lib/deep-motion-editing/blender_rendering/skinning.py -- --bvh_file='resources/360fps/animation.bvh' --fbx_file='resources/ue5/TheBoss.fbx'")
         else :
             print("Unkown option")
             exit()
