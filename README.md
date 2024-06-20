@@ -15,9 +15,11 @@ cd CV-project
 
 Inside an <b>Unreal Engine 5 (UE5)</b> virtual environment we want to achieve 3D to 2D projection of joint positions onto the camera plane.
 We properly modelled the scene inserting 2 core blueprints, one containing our main actor and the other containing the camera
+<br>
 <p align="center">
   <img src="media/scene.png" width="75%">
 </p>
+
 Using the blueprint engine together with [json Blueprint Utilities](https://www.unrealdirective.com/tips/json-blueprint-utilities-plugin) plugin we implemented a script to extract data in \textbf{Json} format (available for visualization [**Here**](https://blueprintue.com/blueprint/_qn_vgvc/) :
 
 
