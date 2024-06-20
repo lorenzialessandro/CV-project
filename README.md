@@ -32,8 +32,8 @@ export PATH=/path/to/blender/folder/:$PATH
 ```
 Then save and close. From now on running "blender" on the terminal directly launch the blender environment
 
-<br><hr>
-To test run:
+<br><hr><br>
+
 ```
 python3 main_extra.py <OPT>
 ```
