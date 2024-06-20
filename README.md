@@ -31,7 +31,7 @@ python3 main_3.py
 </p>
 <br>
 
-## Task optional
+## Extra Task
 Instead of evaluating results on Matplotlib or open3d it would be much better to forward data to a more suitable environment such as Blender.
 We adapted [**deep-motion-editing**](https://github.com/DeepMotionEditing/deep-motion-editing) framework to our data.
 Please use as reference requirements specified in the deep-motion-editing repository.
