@@ -1,14 +1,47 @@
 # CV-project
 
 ## Introduction
-The following folder contains the code of the computer vision project that focuses on several critical tasks related to **motion capture**. First, we examine standard output files from a motion capture system, visualizing human skeletons and rigid bodies in 3D using Python. We then tackle the problem of flickering in rigid body motion caused by marker occlusions, using techniques such as the Kalman filter and the Particle filters. Finally, we integrate motion capture data into Unreal Engine to animate a character and project the skeleton data onto a 2D image plane, applying the necessary geometry.
+
+This repository contains the code, the final report and the presentation for project of the course "Computer Vision" - MSc in Artificial Intelligence Systems - University of Trento. 
+
+The project focuses on several critical tasks related to **motion capture**. First, we examine standard output files from a motion capture system, visualizing human skeletons and rigid bodies in 3D using Python. We then tackle the problem of flickering in rigid body motion caused by marker occlusions, using techniques such as the Kalman filter and the Particle filters. Finally, we integrate motion capture data into Unreal Engine to animate a character and project the skeleton data onto a 2D image plane, applying the necessary geometry.
+
+The project is developed by [@lorenzialessandro](https://github.com/lorenzialessandro) and [@LuCazzola](https://github.com/LuCazzola).
 
 ### Usage
-
+Clone the folder through ``git`` or download (and extract) the ``.zip`` file.
 ```
 git clone https://github.com/lorenzialessandro/CV-project.git
 cd CV-project
 ```
+
+### Folder structure
+The structure of the main files is as follows: 
+````
+.
+├── main1.py          # Task 1
+├── main2.py          # Task 2
+├── main3.py          # Task 3
+├── main_extra.py     # Task extra
+├── docs                    
+│   ├── presentation.pdf   
+│   └── report.pdf        
+├── utils                  
+│   ├── KF_utils.py     # Kalman filter
+│   ├── PF_utils.py     # Particle filter
+│   ├── utils.py        # useful functions 
+│   ├── cameraCalibSquares.py      # camera calibration
+│   └── ...
+├── resources     # input files, blender, ue5 
+│   └── ...
+├── media         # media output files 
+│   └── ...
+├── lib         
+│   └── BVH_reader
+│   └── deep-motion-editing
+│   └── optitrack
+└── ...
+````
 
 ## Task 1
 We have employed a structured approach to read, store and visualize data from CSV, C3D, and BVH files, each of which containing different motion capture data elements.
