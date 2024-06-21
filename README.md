@@ -59,9 +59,9 @@ In the **BVH file** we parsed the file to retrieve the relative rotations, globa
 ### Usage
 
 ```
-python3 main1.py <filter_type>
+python3 main1.py <file_type>
 ```
-\<filter_type\> : mandatory parameter, chose among : { CSV_SKELETON | CSV_RIGID | BVH | C3D}
+\<file_type\> : mandatory parameter, chose among : { CSV_SKELETON | CSV_RIGID | BVH | C3D}
 * CSV_SKELETON : read the [skeleton.csv](./resources/360fps/skeleton.csv) and plot the corresponding skeleton animation. It's also possible to create the `.gif` file using the `create_animation` function. 
 * CSV_RIGID : read the [rigidbody.csv](./resources/360fps/rigidbody.csv) and plot the corresponding rigid body animation. It's also possible to create the `.gif` file using the `create_animation` function.
 * BVH : read the [animation.bvh](./resources/360fps/animation.bvh), store and print the corresponding information in variables. It's also possible to store them in a `.txt` file using the `write_bvh_info_to_txt` function. 
@@ -79,9 +79,9 @@ To address the issue of flickering in the motion of the rigid body due to occlus
 
 ### Usage
 ```
-python3 main2.py <filter_type> <filter_type>
+python3 main2.py <file_type> <filter_type>
 ```
-\<filter_type\> : mandatory parameter, chose among : { CSV_SKELETON | CSV_RIGID}
+\<file_type\> : mandatory parameter, chose among : { CSV_SKELETON | CSV_RIGID}
 \<filter_type> : mandatory parameter, chose among : { KF | PF}
 
 * KF : apply the **Kalman Filter** to the csv input file and create the corresponding corrected animation. It's also possible to create the `.gif` file using the `create_animation` function.
