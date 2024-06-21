@@ -29,10 +29,10 @@ In the **BVH file** we parsed the file to retrieve the relative rotations, globa
 python3 main1.py <filter_type>
 ```
 \<filter_type\> : mandatory parameter, chose among : { CSV_SKELETON | CSV_RIGID | BVH | C3D}
-- CSV_SKELETON : read the [skeleton.csv](./resources/360fps/skeleton.csv) and plot the corresponding skeleton animation. It's also possible to create the `.gif` file using the `create_animation` function. 
-- CSV_RIGID : read the [rigidbody.csv](./resources/360fps/rigidbody.csv) and plot the corresponding rigid body animation. It's also possible to create the `.gif` file using the `create_animation` function.
-- BVH : read the [animation.bvh](./resources/360fps/animation.bvh), store and print the corresponding information in variables. It's also possible to store them in a `.txt` file using the `write_bvh_info_to_txt` function. 
-- C3D : read the [marker.c3d](./resources/360fps/marker.c3d), store and print the corresponding information in variables. It's also possible to store them in a `.txt` file using the `write_c3d_info_to_txt` function. 
+* CSV_SKELETON : read the [skeleton.csv](./resources/360fps/skeleton.csv) and plot the corresponding skeleton animation. It's also possible to create the `.gif` file using the `create_animation` function. 
+* CSV_RIGID : read the [rigidbody.csv](./resources/360fps/rigidbody.csv) and plot the corresponding rigid body animation. It's also possible to create the `.gif` file using the `create_animation` function.
+* BVH : read the [animation.bvh](./resources/360fps/animation.bvh), store and print the corresponding information in variables. It's also possible to store them in a `.txt` file using the `write_bvh_info_to_txt` function. 
+* C3D : read the [marker.c3d](./resources/360fps/marker.c3d), store and print the corresponding information in variables. It's also possible to store them in a `.txt` file using the `write_c3d_info_to_txt` function. 
 
 
 
@@ -51,8 +51,8 @@ python3 main2.py <filter_type> <filter_type>
 \<filter_type\> : mandatory parameter, chose among : { CSV_SKELETON | CSV_RIGID}
 \<filter_type> : mandatory parameter, chose among : { KF | PF}
 
-- KF : apply the **Kalman Filter** to the csv input file and create the corresponding corrected animation. It's also possible to create the `.gif` file using the `create_animation` function.
-- PF : apply the **Particle Filter** to the csv input file and create the corresponding corrected animation. It's also possible to create the `.gif` file using the `create_animation` function.
+* KF : apply the **Kalman Filter** to the csv input file and create the corresponding corrected animation. It's also possible to create the `.gif` file using the `create_animation` function.
+* PF : apply the **Particle Filter** to the csv input file and create the corresponding corrected animation. It's also possible to create the `.gif` file using the `create_animation` function.
 
 
 
