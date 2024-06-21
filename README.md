@@ -94,7 +94,7 @@ export PATH=/path/to/blender/folder/:$PATH
 ```
 Then save and close. From now on running "blender" on the terminal directly launch the blender environment
 
-<br><hr><br>
+
 
 ### Usage
 
@@ -108,3 +108,9 @@ python3 main_extra.py <OPT>
 <p align="center">
   <img src="media/bvhFrame.png" width="75%">
 </p>
+
+---
+
+## Conclusions
+We have successfully solved all the presented tasks related to the field of motion capture. In particular, we first analyzed and plotted human skeletons and rigid bodies in 3D, reading data from different types of input files. Then, by implementing both the Kalman filter and the Particle filter, we solved the problem of flickering due to occlusion. Finally, we interacted with Unreal Engine 5 to get the joints projected from 3D to 2D. We also connected our data to the Blender environment. 
+
