@@ -1,6 +1,9 @@
 # CV-project
 
 ## Introduction
+The following folder contains the code of the computer vision project that focuses on several critical tasks related to **motion capture**. First, we examine standard output files from a motion capture system, visualizing human skeletons and rigid bodies in 3D using Python. We then tackle the problem of flickering in rigid body motion caused by marker occlusions, using techniques such as the Kalman filter and the Particle filters. Finally, we integrate motion capture data into Unreal Engine to animate a character and project the skeleton data onto a 2D image plane, applying the necessary geometry.
+
+### Usage
 
 ```
 git clone https://github.com/lorenzialessandro/CV-project.git
@@ -20,9 +23,38 @@ We have employed a structured approach to read, store and visualize data from CS
 
 In the **BVH file** we parsed the file to retrieve the relative rotations, global positions, edges (bone connections), offsets (bone lengths), and joint names. For the **C3D file** we read the file and extracted a tuple containing a list of dictionaries with the marker information for each frame and the labels: a list of marker labels.
 
+### Usage
+
+```
+python3 main1.py <filter_type>
+```
+\<filter_type\> : mandatory parameter, chose among : { CSV_SKELETON | CSV_RIGID | BVH | C3D}
+- CSV_SKELETON : read the [skeleton.csv](./resources/360fps/skeleton.csv) and plot the corresponding skeleton animation. It's also possible to create the `.gif` file using the `create_animation` function. 
+- CSV_RIGID : read the [rigidbody.csv](./resources/360fps/rigidbody.csv) and plot the corresponding rigid body animation. It's also possible to create the `.gif` file using the `create_animation` function.
+- BVH : read the [animation.bvh](./resources/360fps/animation.bvh), store and print the corresponding information in variables. It's also possible to store them in a `.txt` file using the `write_bvh_info_to_txt` function. 
+- C3D : read the [marker.c3d](./resources/360fps/marker.c3d), store and print the corresponding information in variables. It's also possible to store them in a `.txt` file using the `write_c3d_info_to_txt` function. 
+
 
 
 ## Task 2
+
+To address the issue of flickering in the motion of the rigid body due to occlusions, two different filtering methods were implemented: **Kalman Filter** (KF) and **Particle Filter** (PF).
+
+|KF on Rigid Body|PF on Rigid Body|
+|-|-|
+|![](./media/ragnetto-KF.gif)|![](./media/ragnetto-PF.gif)|
+
+### Usage
+```
+python3 main2.py <filter_type> <filter_type>
+```
+\<filter_type\> : mandatory parameter, chose among : { CSV_SKELETON | CSV_RIGID}
+\<filter_type> : mandatory parameter, chose among : { KF | PF}
+
+- KF : apply the **Kalman Filter** to the csv input file and create the corresponding corrected animation. It's also possible to create the `.gif` file using the `create_animation` function.
+- PF : apply the **Particle Filter** to the csv input file and create the corresponding corrected animation. It's also possible to create the `.gif` file using the `create_animation` function.
+
+
 
 ## Task 3
 
@@ -35,6 +67,7 @@ We properly modelled the scene inserting 2 core blueprints, one containing our m
 
 Using the blueprint engine together with [json Blueprint Utilities](https://www.unrealdirective.com/tips/json-blueprint-utilities-plugin) plugin we implemented a script to extract data in <b>Json</b> format (available for visualization [**Here**](https://blueprintue.com/blueprint/_qn_vgvc/)). Using openCV and the extracted data we're able to project skeleton joints on the camera frame:
 <br>
+### Usage
 ```
 python3 main_3.py
 ```
@@ -62,6 +95,8 @@ export PATH=/path/to/blender/folder/:$PATH
 Then save and close. From now on running "blender" on the terminal directly launch the blender environment
 
 <br><hr><br>
+
+### Usage
 
 ```
 python3 main_extra.py <OPT>
