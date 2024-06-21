@@ -8,6 +8,19 @@ cd CV-project
 ```
 
 ## Task 1
+We have employed a structured approach to read, store and visualize data from CSV, C3D, and BVH files, each of which containing different motion capture data elements.
+
+**CSV files**: we extracted the x, y, and z coordinates for each joint of the skeleton, along with their connections and we plot the data in 3D, showing the relative positions of various bones and joints (such as the head, neck, shoulders, …) and also both the connections along the markers and the trajectories of the skeleton. Similar to the skeleton, we read the rigid body data using a function to extract the marker positions, visualizing in 3D the markers and their connections.
+
+|Skeleton from CSV file | Rigid Body from CSV file|
+|-|-|
+|![](./media/skeleton.gif)|![](./media/ragnetto-basic.gif)|
+
+
+
+In the **BVH file** we parsed the file to retrieve the relative rotations, global positions, edges (bone connections), offsets (bone lengths), and joint names. For the **C3D file** we read the file and extracted a tuple containing a list of dictionaries with the marker information for each frame and the labels: a list of marker labels.
+
+
 
 ## Task 2
 
