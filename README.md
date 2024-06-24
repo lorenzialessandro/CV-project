@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This repository contains the code, the final report and the presentation for project of the course "Computer Vision" - MSc in Artificial Intelligence Systems - University of Trento. 
+This repository contains the code, the [final report](./docs/report.pdf) and the presentation for project of the course "Computer Vision" - MSc in Artificial Intelligence Systems - University of Trento. 
 
 The project focuses on several critical tasks related to **motion capture**. First, we examine standard output files from a motion capture system, visualizing human skeletons and rigid bodies in 3D using Python. We then tackle the problem of flickering in rigid body motion caused by marker occlusions, using techniques such as the Kalman filter and the Particle filters. Finally, we integrate motion capture data into Unreal Engine to animate a character and project the skeleton data onto a 2D image plane, applying the necessary geometry.
 
