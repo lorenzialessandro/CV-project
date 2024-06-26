@@ -8,6 +8,8 @@ The project focuses on several critical tasks related to **motion capture**. Fir
 
 The project is developed by [@lorenzialessandro](https://github.com/lorenzialessandro) and [@LuCazzola](https://github.com/LuCazzola).
 
+An high level explanation of the project is also available [Here](https://www.lucazzola.it/mocap.html)
+
 ### Usage
 Clone the folder through ``git`` or download (and extract) the ``.zip`` file.
 ```
@@ -108,9 +110,8 @@ python3 main_3.py
 <p align="center">
   <img src="media/skeletonProjection.png" width="75%">
 </p>
-<br>
 
-Video available [**Here**](https://www.youtube.com/watch?v=o15dF4TyqWo)
+[**Video**](https://www.youtube.com/watch?v=o15dF4TyqWo) also available 
 
 ## Extra Task
 Instead of evaluating results on Matplotlib or open3d it would be much better to forward data to a more suitable environment such as Blender.
@@ -143,11 +144,10 @@ python3 main_extra.py <OPT>
 <p align="center">
   <img src="media/bvhFrame.png" width="75%">
 </p>
-<br>
 
-Video available [**Here**](https://www.youtube.com/watch?v=D_EZb1E4K_M)
+[**Video**](https://www.youtube.com/watch?v=D_EZb1E4K_M) also available.
 
----
+<br><hr>
 
 ## Conclusions
 We have successfully solved all the presented tasks related to the field of motion capture. In particular, we first analyzed and plotted human skeletons and rigid bodies in 3D, reading data from different types of input files. Then, by implementing both the Kalman filter and the Particle filter, we solved the problem of flickering due to occlusion. Finally, we interacted with Unreal Engine 5 to get the joints projected from 3D to 2D. We also connected our data to the Blender environment. 
