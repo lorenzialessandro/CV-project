@@ -109,6 +109,7 @@ python3 main_3.py
   <img src="media/skeletonProjection.png" width="75%">
 </p>
 <br>
+Video available [**Here**](https://www.youtube.com/watch?v=o15dF4TyqWo)
 
 ## Extra Task
 Instead of evaluating results on Matplotlib or open3d it would be much better to forward data to a more suitable environment such as Blender.
@@ -141,7 +142,8 @@ python3 main_extra.py <OPT>
 <p align="center">
   <img src="media/bvhFrame.png" width="75%">
 </p>
-
+<br>
+Video available [**Here**](https://www.youtube.com/watch?v=D_EZb1E4K_M)
 ---
 
 ## Conclusions
