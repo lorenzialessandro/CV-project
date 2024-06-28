@@ -13,7 +13,7 @@ An high level explanation of the project is also available [Here](https://www.lu
 ### Usage
 Clone the folder through ``git`` or download (and extract) the ``.zip`` file.
 ```
-git clone https://github.com/lorenzialessandro/CV-project.git
+git clone --recursive https://github.com/lorenzialessandro/CV-project.git
 cd CV-project
 ```
 
